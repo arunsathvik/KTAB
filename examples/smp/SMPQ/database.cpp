@@ -25,16 +25,18 @@
 
 Database::Database()
 {
-}
-
-Database::~Database()
-{
     // Database Initiaization
     QStringList driverList;
     driverList = QSqlDatabase::drivers();
 
     if (!driverList.contains("QSQLITE", Qt::CaseInsensitive))
         emit Message("Database Error", "No QSQLITE support! Check all needed dll-files!");
+
+}
+
+Database::~Database()
+{
+
 }
 
 void Database::openDB(QString dbPath)

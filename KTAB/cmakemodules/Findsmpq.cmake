@@ -220,7 +220,8 @@ if(SMPQ_SOURCE_DIR)
         ${SMPQ_SOURCE_DIR}/mainwindow.cpp
         ${SMPQ_SOURCE_DIR}/csv.cpp
         ${SMPQ_SOURCE_DIR}/database.cpp
-        ${SMPQ_SOURCE_DIR}/customgraph.cpp)
+	${SMPQ_SOURCE_DIR}/bargraph.cpp
+        ${SMPQ_SOURCE_DIR}/linegraph.cpp)
 
     set (QtProjectLib_hdr
         ${SMPQ_SOURCE_DIR}/mainwindow.h

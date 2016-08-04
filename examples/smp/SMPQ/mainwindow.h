@@ -169,7 +169,6 @@ private:
 
     QTableWidget * csvTableWidget;
 
-
     QMenu *viewMenu;
 
     QDockWidget * moduleParametersDock;
@@ -186,7 +185,7 @@ private:
     QString dbPath;
 
     //Graph 1 widget
-    QFrame *lineGraphWidget;
+    QFrame *lineGraphMainFrame;
     QGridLayout * lineGraphGridLayout;
     QCustomPlot * lineCustomGraph;
 
@@ -226,13 +225,13 @@ private:
 
 private slots:
     void titleDoubleClick(QMouseEvent *event, QCPPlotTitle *title);
-    void axisLabelDoubleClick(QCPAxis* axis, QCPAxis::SelectablePart part);
-    void legendDoubleClick(QCPLegend* legend, QCPAbstractLegendItem* item);
-    void selectionChanged();
+    //    void axisLabelDoubleClick(QCPAxis* axis, QCPAxis::SelectablePart part);
+    //    void legendDoubleClick(QCPLegend* legend, QCPAbstractLegendItem* item);
+    //    void selectionChanged();
     void mousePress();
     void mouseWheel();
     void addGraphOnModule1(const QVector<double> &x, const QVector<double> &y, QString Actor);
-    void removeSelectedGraph();
+    //    void removeSelectedGraph();
     void removeAllGraphs();
     void contextMenuRequest(QPoint pos);
     void moveLegend();
@@ -298,6 +297,26 @@ private slots:
     void barGraphActorsSalienceCapability(QList<int> aId, QList<double> sal, QList<double>cap, double r1, double r2);
     void xAxisRangeChanged( const QCPRange &newRange, const QCPRange &oldRange );
     void yAxisRangeChanged( const QCPRange &newRange, const QCPRange &oldRange );
+
+
+
+    //line Graph
+private :
+    void initializeLineGraphDock();
+
+    QFrame * lineGraphControlsFrame;
+    QScrollArea *lineGraphActorsScrollArea;
+    QCheckBox *lineGraphSelectAllCheckBox;
+    QRadioButton *lineGraphRadioButton ;
+    QRadioButton *sankeyGraphRadioButton;
+    QComboBox *lineGraphDimensionComboBox;
+    QStackedWidget *graphTypeStackedWidget;
+    QSlider *lineGraphTurnSlider;
+
+private slots :
+    void lineGraphSelectAllActorsCheckBoxClicked(bool);
+    void lineGraphDimensionChanged(int indx);
+    void lineGraphTurnSliderChanged(int);
 
 };
 

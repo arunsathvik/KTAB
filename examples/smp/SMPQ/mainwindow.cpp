@@ -154,7 +154,7 @@ void MainWindow::dbGetFilePAth(bool bl)
 
         //To populate Dimensions combo box
         populateBarGraphDimensions(dimensionsLineEdit->text().toInt());
-     }
+    }
     statusBar()->showMessage(tr(" "));
 }
 
@@ -212,7 +212,7 @@ void MainWindow::updateDimensionCount(int dim, QStringList * dimList)
         dimensionList.append( dimList->at(i));
 
     //populateBarGraphDimensions(dim);
- }
+}
 
 void MainWindow::sliderStateValueToQryDB(int value)
 {
@@ -255,6 +255,7 @@ void MainWindow::scenarioComboBoxValue(int scenario)
         }
     }
 }
+
 void MainWindow::cellSelected(QStandardItem* in)
 {
     Q_UNUSED(in)
@@ -841,19 +842,14 @@ void MainWindow::createStatusBar()
 void MainWindow::createGraph1DockWindows()
 {
     lineGraphDock = new QDockWidget(tr("Graph 1"), this);
-    //   graph1Dock->setAllowedAreas(Qt::LeftDockWidgetArea |Qt::RightDockWidgetArea |Qt::BottomDockWidgetArea | Qt::TopDockWidgetArea);
-    lineGraphWidget = new QFrame(lineGraphDock);
-
-    lineGraphGridLayout = new QGridLayout(lineGraphWidget);
-    lineCustomGraph = new QCustomPlot(lineGraphWidget);
-    lineGraphGridLayout->addWidget(lineCustomGraph);
+    lineGraphMainFrame = new QFrame(lineGraphDock);
+    lineGraphGridLayout = new QGridLayout(lineGraphMainFrame);
 
     //draw a graph
-    initializeLineGraphPlot();
-    plotGraph();
+    initializeLineGraphDock();
 
-    lineGraphDock->setWidget(lineGraphWidget);
-    addDockWidget(Qt::RightDockWidgetArea, lineGraphDock);
+    lineGraphDock->setWidget(lineGraphMainFrame);
+    addDockWidget(Qt::BottomDockWidgetArea, lineGraphDock);
     viewMenu->addAction(lineGraphDock->toggleViewAction());
 
     connect(lineGraphDock,SIGNAL(dockLocationChanged(Qt::DockWidgetArea)),this,SLOT(dockWindowChanged()));
@@ -865,9 +861,9 @@ void MainWindow::createGraph2DockWindows()
     barGraphMainFrame = new QFrame(barGraphDock);
     barGraphGridLayout = new QGridLayout(barGraphMainFrame);
 
-
     //initialize BarGraph layout
     initializeBarGraphDock();
+
     barGraphDock->setWidget(barGraphMainFrame);
     addDockWidget(Qt::BottomDockWidgetArea, barGraphDock);
     viewMenu->addAction(barGraphDock->toggleViewAction());
@@ -1160,63 +1156,6 @@ void MainWindow::updateDBViewColumns()
     }
 }
 
-void MainWindow::initializeLineGraphPlot()
-{
-    lineCustomGraph->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectAxes |
-                                     QCP::iSelectLegend | QCP::iSelectPlottables);
-    lineCustomGraph->xAxis->setRange(0, 10);
-    lineCustomGraph->yAxis->setRange(0,100);
-    lineCustomGraph->axisRect()->setupFullAxesBox();
-
-    lineCustomGraph->plotLayout()->insertRow(0);
-    lineCustomGraph->plotLayout()->addElement(0, 0, new QCPPlotTitle(lineCustomGraph, "Competitive vs Time "));
-
-    lineCustomGraph->xAxis->setLabel("Time");
-    lineCustomGraph->yAxis->setLabel("Competitive");
-    lineCustomGraph->legend->setVisible(true);
-
-    QFont legendFont = font();
-    legendFont.setPointSize(10);
-    lineCustomGraph->legend->setFont(legendFont);
-    lineCustomGraph->legend->setSelectedFont(legendFont);
-    lineCustomGraph->legend->setSelectableParts(QCPLegend::spItems); // legend box shall not be selectable, only legend items
-
-    connect(lineCustomGraph, SIGNAL(legendClick(QCPLegend*,QCPAbstractLegendItem*,QMouseEvent*)), this, SLOT(selectionChanged()));
-    // connect slot that ties some axis selections together (especially opposite axes):
-    connect(lineCustomGraph, SIGNAL(selectionChangedByUser()), this, SLOT(selectionChanged()));
-    // connect slots that takes care that when an axis is selected, only that direction can be dragged and zoomed:
-    connect(lineCustomGraph, SIGNAL(mousePress(QMouseEvent*)), this, SLOT(mousePress()));
-    connect(lineCustomGraph, SIGNAL(mouseWheel(QWheelEvent*)), this, SLOT(mouseWheel()));
-
-    // make bottom and left axes transfer their ranges to top and right axes:
-    connect(lineCustomGraph->xAxis, SIGNAL(rangeChanged(QCPRange)), lineCustomGraph->xAxis2, SLOT(setRange(QCPRange)));
-    connect(lineCustomGraph->yAxis, SIGNAL(rangeChanged(QCPRange)), lineCustomGraph->yAxis2, SLOT(setRange(QCPRange)));
-
-    // connect some interaction slots:
-    connect(lineCustomGraph, SIGNAL(titleDoubleClick(QMouseEvent*,QCPPlotTitle*)), this, SLOT(titleDoubleClick(QMouseEvent*,QCPPlotTitle*)));
-    connect(lineCustomGraph, SIGNAL(axisDoubleClick(QCPAxis*,QCPAxis::SelectablePart,QMouseEvent*)), this, SLOT(axisLabelDoubleClick(QCPAxis*,QCPAxis::SelectablePart)));
-    connect(lineCustomGraph, SIGNAL(legendDoubleClick(QCPLegend*,QCPAbstractLegendItem*,QMouseEvent*)), this, SLOT(legendDoubleClick(QCPLegend*,QCPAbstractLegendItem*)));
-
-    // connect slot that shows a message in the status bar when a graph is clicked:
-    connect(lineCustomGraph, SIGNAL(plottableClick(QCPAbstractPlottable*,QMouseEvent*)), this, SLOT(graphClicked(QCPAbstractPlottable*)));
-
-    // setup policy and connect slot for context menu popup:
-    lineCustomGraph->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(lineCustomGraph, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(contextMenuRequest(QPoint)));
-}
-
-void MainWindow::plotGraph()
-{
-    //    addGraphOnModule1(0,0);
-    //    addGraphOnModule1(1,0);
-    //    addGraphOnModule1(2,0);
-    //    addGraphOnModule1(3,0);
-    //    addGraphOnModule1(4,0);
-    //    addGraphOnModule1(5,0);
-    //    addGraphOnModule1(6,0);
-    //    addGraphOnModule1(7,0);
-}
-
 void MainWindow::displayMenuTableWidget(QPoint pos)
 {
     QMenu menu(this);
@@ -1436,261 +1375,6 @@ void MainWindow::actorsSalience(QList<QString> actorSalience,int dim)
     //    qDebug()<<actorsSalience[dim].at(0);
 }
 
-void MainWindow::titleDoubleClick(QMouseEvent* event, QCPPlotTitle* title)
-{
-    Q_UNUSED(event)
-    // Set the plot title by double clicking on it
-    bool ok;
-    QString newTitle = QInputDialog::getText(this, "Title", "New plot title:", QLineEdit::Normal, title->text(), &ok);
-    if (ok)
-    {
-        title->setText(newTitle);
-        lineCustomGraph->replot();
-    }
-}
-
-void MainWindow::axisLabelDoubleClick(QCPAxis *axis, QCPAxis::SelectablePart part)
-{
-    // Set an axis label by double clicking on it
-    if (part == QCPAxis::spAxisLabel) // only react when the actual axis label is clicked, not tick label or axis backbone
-    {
-        bool ok;
-        QString newLabel = QInputDialog::getText(this, "Title", "New axis label:", QLineEdit::Normal, axis->label(), &ok);
-        if (ok)
-        {
-            axis->setLabel(newLabel);
-            lineCustomGraph->replot();
-        }
-    }
-}
-
-void MainWindow::legendDoubleClick(QCPLegend *legend, QCPAbstractLegendItem *item)
-{
-    // Rename a graph by double clicking on its legend item
-
-    Q_UNUSED(legend)
-    if (item) // only react if item was clicked (user could have clicked on border padding of legend where there is no item, then item is 0)
-    {
-        QCPPlottableLegendItem *plItem = qobject_cast<QCPPlottableLegendItem*>(item);
-        bool ok;
-        QString newName = QInputDialog::getText(this, "Title","New graph name:", QLineEdit::Normal, plItem->plottable()->name(), &ok);
-        if (ok)
-        {
-            plItem->plottable()->setName(newName);
-
-            lineCustomGraph->replot();
-        }
-    }
-}
-
-void MainWindow::selectionChanged()
-{
-    // make top and bottom axes be selected synchronously, and handle axis and tick labels as one selectable object:
-    if (lineCustomGraph->xAxis->selectedParts().testFlag(QCPAxis::spAxis) || lineCustomGraph->xAxis->selectedParts().testFlag(QCPAxis::spTickLabels) ||
-            lineCustomGraph->xAxis2->selectedParts().testFlag(QCPAxis::spAxis) || lineCustomGraph->xAxis2->selectedParts().testFlag(QCPAxis::spTickLabels))
-    {
-        lineCustomGraph->xAxis2->setSelectedParts(QCPAxis::spAxis|QCPAxis::spTickLabels);
-        lineCustomGraph->xAxis->setSelectedParts(QCPAxis::spAxis|QCPAxis::spTickLabels);
-    }
-    // make left and right axes be selected synchronously, and handle axis and tick labels as one selectable object:
-    if (lineCustomGraph->yAxis->selectedParts().testFlag(QCPAxis::spAxis) || lineCustomGraph->yAxis->selectedParts().testFlag(QCPAxis::spTickLabels) ||
-            lineCustomGraph->yAxis2->selectedParts().testFlag(QCPAxis::spAxis) || lineCustomGraph->yAxis2->selectedParts().testFlag(QCPAxis::spTickLabels))
-    {
-        lineCustomGraph->yAxis2->setSelectedParts(QCPAxis::spAxis|QCPAxis::spTickLabels);
-        lineCustomGraph->yAxis->setSelectedParts(QCPAxis::spAxis|QCPAxis::spTickLabels);
-    }
-
-    // synchronize selection of graphs with selection of corresponding legend items:
-    for (int i=0; i<lineCustomGraph->graphCount(); ++i)
-    {
-        QCPGraph *graph = lineCustomGraph->graph(i);
-        QCPPlottableLegendItem *item = lineCustomGraph->legend->itemWithPlottable(graph);
-        if (item->selected() || graph->selected())
-        {
-            item->setSelected(true);
-            graph->setSelected(true);
-        }
-    }
-}
-
-void MainWindow::mousePress()
-{
-    // if an axis is selected, only allow the direction of that axis to be dragged
-    // if no axis is selected, both directions may be dragged
-
-    if (lineCustomGraph->xAxis->selectedParts().testFlag(QCPAxis::spAxis))
-        lineCustomGraph->axisRect()->setRangeDrag(lineCustomGraph->xAxis->orientation());
-    else if (lineCustomGraph->yAxis->selectedParts().testFlag(QCPAxis::spAxis))
-        lineCustomGraph->axisRect()->setRangeDrag(lineCustomGraph->yAxis->orientation());
-    else
-        lineCustomGraph->axisRect()->setRangeDrag(Qt::Horizontal|Qt::Vertical);
-}
-
-void MainWindow::mouseWheel()
-{
-    // if an axis is selected, only allow the direction of that axis to be zoomed
-    // if no axis is selected, both directions may be zoomed
-
-    if (lineCustomGraph->xAxis->selectedParts().testFlag(QCPAxis::spAxis))
-        lineCustomGraph->axisRect()->setRangeZoom(lineCustomGraph->xAxis->orientation());
-    else if (lineCustomGraph->yAxis->selectedParts().testFlag(QCPAxis::spAxis))
-        lineCustomGraph->axisRect()->setRangeZoom(lineCustomGraph->yAxis->orientation());
-    else
-        lineCustomGraph->axisRect()->setRangeZoom(Qt::Horizontal|Qt::Vertical);
-}
-
-void MainWindow::addGraphOnModule1(const QVector<double> &x, const QVector<double> &y,QString Actor)
-{
-    {//    QSqlQuery qry;
-        //    QString query= QString("select * from VectorPosition where Act_i='%1' and Dim_k='%2' ").arg(act).arg(dim);
-
-        //    int n=0;
-        //    qry.exec(query);
-
-        //    while(qry.next())
-        //    {
-        //        n++;
-        //        qDebug()<<"n" << n;
-        //    }
-
-        //    QVector<double> x(n), y(n);
-        //    int actornumber=0;
-        //    int i =0;
-        //    query= QString("select * from VectorPosition where Act_i='%1' and Dim_k='%2' ").arg(act).arg(dim);
-        //    qry.exec(query);
-        //    while(qry.next())
-        //    {
-        //        qDebug()<<qry.value(1).toDouble() << "    " <<qry.value(4).toDouble();
-        //        x[i]=qry.value(1).toDouble();
-        //        y[i]=qry.value(4).toDouble()*100;
-        //        actornumber=qry.value(2).toInt();
-        //        ++i;
-        //    }
-
-        //    customGraph->addGraph();
-        //    customGraph->graph()->setPen(QPen(Qt::blue));
-        //    customGraph->graph()->setBrush(QBrush(QColor(0, 0, 255, 20)));
-        //    customGraph->addGraph();
-        //    customGraph->graph()->setPen(QPen(Qt::red));
-        //    QVector<double> x(500), y0(500), y1(500);
-
-        //    for (int i=0; i<n; ++i)
-        //    {
-        //        //     x[i] = (i/n-0.5)*10;
-        //        //     y[i] = qExp(-x[i]*x[i]*0.25)*qSin(x[i]*5)*5;
-        //        //      y[i] = qExp(-x[i]*x[i]*0.25)*5;
-        //    }
-        //    customGraph->graph(0)->setData(x, y);
-        //    //  customGraph->graph(1)->setData(x, y1);
-        //    customGraph->axisRect()->setupFullAxesBox(true);
-        //    customGraph->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom);
-
-        //    QVector<double> x(500), y0(500), y1(500);
-
-
-        //    for (int i=0; i<n; ++i)
-        //    {
-        //      x[i] = (i/n-1-0.5)*10;
-        //      y[i] = qExp(-x[i]*x[i]*0.25)*qSin(x[i]*5)*5;
-        //    }
-        //    customGraph->graph()->setData(x, y);
-        //   // customGraph->graph(1)->setData(x, y);
-        //    customGraph->axisRect()->setupFullAxesBox(true);
-        //    customGraph->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom);
-
-        //        int n = 50; // number of points in graph
-        //    double xScale = (rand()/(double)RAND_MAX + 0.5)*2;
-        //    double yScale = (rand()/(double)RAND_MAX + 0.5)*2;
-        //    double xOffset = (rand()/(double)RAND_MAX - 0.5)*4;
-        //    double yOffset = (rand()/(double)RAND_MAX - 0.5)*5;
-        //    double r1 = (rand()/(double)RAND_MAX - 0.5)*2;
-        //    double r2 = (rand()/(double)RAND_MAX - 0.5)*2;
-        //    double r3 = (rand()/(double)RAND_MAX - 0.5)*2;
-        //    double r4 = (rand()/(double)RAND_MAX - 0.5)*2;
-        //        QVector<double> x(n), y(n);
-
-        //        for (int i=0; i<n; i++)
-        //        {
-        //            x[i] = (i/(double)n-0.5)*10.0*xScale + xOffset;
-        //            y[i] = (qSin(x[i]*r1*5)*qSin(qCos(x[i]*r2)*r4*3)+r3*qCos(qSin(x[i])*r4*2))*yScale + yOffset;
-        //        }
-    }
-
-    lineCustomGraph->addGraph();
-    lineCustomGraph->graph()->setName(Actor);
-    lineCustomGraph->graph()->setData(x, y);
-    lineCustomGraph->graph()->setLineStyle(((QCPGraph::LineStyle)(1)));//upto 5
-
-    //  if (rand()%100 > 50)
-    lineCustomGraph->graph()->setScatterStyle(QCPScatterStyle((QCPScatterStyle::ScatterShape)(9)));
-
-    QPen graphPen;
-    graphPen.setColor(QColor(rand()%245+10, rand()%245+10, rand()%245+10));
-    graphPen.setWidthF(rand()/(double)RAND_MAX*2+1);
-
-    lineCustomGraph->graph()->setPen(graphPen);
-    lineCustomGraph->replot();
-
-}
-
-void MainWindow::removeSelectedGraph()
-{
-    if (lineCustomGraph->selectedGraphs().size() > 0)
-    {
-        lineCustomGraph->removeGraph(lineCustomGraph->selectedGraphs().first());
-        lineCustomGraph->replot();
-    }
-}
-
-void MainWindow::removeAllGraphs()
-{
-    lineCustomGraph->clearGraphs();
-    lineCustomGraph->replot();
-}
-
-void MainWindow::contextMenuRequest(QPoint pos)
-{
-    QMenu *menu = new QMenu(this);
-    menu->setAttribute(Qt::WA_DeleteOnClose);
-
-    if (lineCustomGraph->legend->selectTest(pos, false) >= 0) // context menu on legend requested
-    {
-        menu->addAction("Move to top left", this, SLOT(moveLegend()))->setData((int)(Qt::AlignTop|Qt::AlignLeft));
-        menu->addAction("Move to top center", this, SLOT(moveLegend()))->setData((int)(Qt::AlignTop|Qt::AlignHCenter));
-        menu->addAction("Move to top right", this, SLOT(moveLegend()))->setData((int)(Qt::AlignTop|Qt::AlignRight));
-        menu->addAction("Move to bottom right", this, SLOT(moveLegend()))->setData((int)(Qt::AlignBottom|Qt::AlignRight));
-        menu->addAction("Move to bottom left", this, SLOT(moveLegend()))->setData((int)(Qt::AlignBottom|Qt::AlignLeft));
-    }
-    else  // general context menu on graphs requested
-    {
-        menu->addAction("Add random graph", this, SLOT(addGraphOnModule1()));
-        if (lineCustomGraph->selectedGraphs().size() > 0)
-            menu->addAction("Remove selected graph", this, SLOT(removeSelectedGraph()));
-        if (lineCustomGraph->graphCount() > 0)
-            menu->addAction("Remove all graphs", this, SLOT(removeAllGraphs()));
-    }
-
-    menu->popup(lineCustomGraph->mapToGlobal(pos));
-}
-
-void MainWindow::moveLegend()
-{
-    if (QAction * contextAction = qobject_cast<QAction*>(sender())) // make sure this slot is really called by a context menu action, so it carries the data we need
-    {
-        bool ok;
-        int dataInt = contextAction->data().toInt(&ok);
-        if (ok)
-        {
-            lineCustomGraph->axisRect()->insetLayout()->setInsetAlignment(0, (Qt::Alignment)dataInt);
-            lineCustomGraph->replot();
-        }
-    }
-}
-
-void MainWindow::graphClicked(QCPAbstractPlottable *plottable)
-{
-    //statusBar->showMessage(QString("Clicked on graph '%1'.").arg(plottable->name()), 1000);
-}
 
 // --------------------------------------------
 // Copyright KAPSARC. Open source MIT License.
