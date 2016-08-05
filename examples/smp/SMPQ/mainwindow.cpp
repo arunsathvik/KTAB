@@ -99,6 +99,7 @@ MainWindow::MainWindow()
     connect(this,SIGNAL(getDimforBar()),dbObj,SLOT(getDims()));
     //received dimension Values
     connect(dbObj,SIGNAL(dimensList(QStringList*)),this,SLOT(updateBarDimension(QStringList*)));
+    connect(dbObj,SIGNAL(dimensList(QStringList*)),this,SLOT(updateLineDimension(QStringList*)));
 
 
     //editable headers of TableWidget and TableView
@@ -152,7 +153,9 @@ void MainWindow::dbGetFilePAth(bool bl)
         modeltoDB->clear();
         emit dbFilePath(dbPath);
 
-        //To populate Dimensions combo box
+        //To populate Line Graph Dimensions combo box
+        populateLineGraphDimensions(dimensionsLineEdit->text().toInt());
+        //To populate Bar Graph Dimensions combo box
         populateBarGraphDimensions(dimensionsLineEdit->text().toInt());
     }
     statusBar()->showMessage(tr(" "));
@@ -183,6 +186,8 @@ void MainWindow::updateStateCountSliderRange(int states)
 {
     turnSlider->setRange(0,states);
 
+    //To set slider Range for line Graph
+    populateLineGraphStateRange(states);
     //To set slider Range for Bar Graph
     populateBarGraphStateRange(states);
 }
@@ -211,7 +216,6 @@ void MainWindow::updateDimensionCount(int dim, QStringList * dimList)
     for(int i = 0 ; i < dimList->length(); ++i)
         dimensionList.append( dimList->at(i));
 
-    //populateBarGraphDimensions(dim);
 }
 
 void MainWindow::sliderStateValueToQryDB(int value)
@@ -1340,6 +1344,20 @@ void MainWindow::actorsNameDesc(QList <QString> actorName,QList <QString> actorD
     actorsName = actorName;
     actorsDescription = actorDescription;
     //    qDebug()<<actorsName.at(0) <<actorsName.count();
+
+    if(!lineGraphActorsCheckBoxList.isEmpty())
+    {
+        for(int i=0; i < actorsName.length();++i)
+        {
+            if(lineGraphActorsCheckBoxList.at(i)->text()!=actorsName.at(i))
+            {
+                populateLineGraphActorsList();
+                return;
+            }
+        }
+    }
+    else
+        populateLineGraphActorsList();
 
     if(!barGraphActorsCheckBoxList.isEmpty())
     {

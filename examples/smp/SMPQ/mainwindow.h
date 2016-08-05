@@ -224,7 +224,7 @@ private:
 
 
 private slots:
-    void titleDoubleClick(QMouseEvent *event, QCPPlotTitle *title);
+    void titleDoubleClick(QMouseEvent *event, QCPPlotTitle *barGraphTitle);
     //    void axisLabelDoubleClick(QCPAxis* axis, QCPAxis::SelectablePart part);
     //    void legendDoubleClick(QCPLegend* legend, QCPAbstractLegendItem* item);
     //    void selectionChanged();
@@ -272,7 +272,7 @@ private :
     QCPBars * prevBarU;
     QList<QColor> colorsList;
 
-    QList <QCheckBox * > actorCBList;
+    QList <QCheckBox * > barActorCBList;
     QList <int> actorsIdsClr;
 
     double yAxisLen;
@@ -283,7 +283,7 @@ private :
     double currentStackHeight[100];
     double binWidth;
 
-    QCPPlotTitle * title;
+    QCPPlotTitle * barGraphTitle;
 
 signals :
     void getActorIdsInRange(double lowerRange, double upperRange, int dimension, int turn);
@@ -298,11 +298,12 @@ private slots:
     void xAxisRangeChanged( const QCPRange &newRange, const QCPRange &oldRange );
     void yAxisRangeChanged( const QCPRange &newRange, const QCPRange &oldRange );
 
-
-
     //line Graph
 private :
     void initializeLineGraphDock();
+    void populateLineGraphActorsList();
+    void populateLineGraphDimensions(int dim);
+    void populateLineGraphStateRange(int states);
 
     QFrame * lineGraphControlsFrame;
     QScrollArea *lineGraphActorsScrollArea;
@@ -313,11 +314,19 @@ private :
     QStackedWidget *graphTypeStackedWidget;
     QSlider *lineGraphTurnSlider;
 
-private slots :
-    void lineGraphSelectAllActorsCheckBoxClicked(bool);
-    void lineGraphDimensionChanged(int indx);
-    void lineGraphTurnSliderChanged(int);
+    QList <QCheckBox *> lineGraphActorsCheckBoxList;
+    QList <bool> lineGraphCheckedActorsIdList;
 
+    QList <QCheckBox * > lineActorCBList;
+
+    QCPPlotTitle * lineGraphTitle;
+
+private slots :
+    void lineGraphSelectAllActorsCheckBoxClicked(bool click);
+    void lineGraphDimensionChanged(int value);
+    void lineGraphTurnSliderChanged(int);
+    void lineGraphActorsCheckboxClicked(bool click);
+    void updateLineDimension(QStringList *dims);
 };
 
 

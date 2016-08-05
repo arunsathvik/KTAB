@@ -104,12 +104,14 @@ void MainWindow::initializeBarGraphDock()
 
 void MainWindow::initializeBarGraphPlot()
 {
-    title = new QCPPlotTitle(barCustomGraph,"Bar Graph");
-    title->setTextColor(QColor(255,57,55));
+    QFont font("Helvetica[Adobe]",15);
+    barGraphTitle = new QCPPlotTitle(barCustomGraph,"Bar Graph");
+    barGraphTitle->setFont(font);
+    barGraphTitle->setTextColor(QColor(51,51,255));
 
     barCustomGraph->plotLayout()->insertRow(0);
     barCustomGraph->plotLayout()->addElement(
-                0, 0, title);
+                0, 0, barGraphTitle);
 
     barCustomGraph->xAxis->setAutoTicks(true);
     barCustomGraph->xAxis->setAutoTickLabels(true);
@@ -131,18 +133,17 @@ void MainWindow::initializeBarGraphPlot()
     connect( barCustomGraph->yAxis, SIGNAL(rangeChanged(QCPRange,QCPRange)), this, SLOT(yAxisRangeChanged(QCPRange,QCPRange)) );
 
     // setup legend:
-    barCustomGraph->legend->setVisible(true);
-    barCustomGraph->axisRect()->insetLayout()->setInsetAlignment(0, Qt::AlignTop|Qt::AlignHCenter);
-    barCustomGraph->legend->setBrush(QColor(255, 255, 255, 200));
-    QPen legendPen;
-    legendPen.setColor(QColor(130, 130, 130, 200));
-    barCustomGraph->legend->setBorderPen(legendPen);
-    QFont legendFont = font();
-    legendFont.setPointSize(20);
-    barCustomGraph->legend->setFont(legendFont);
+    barCustomGraph->legend->setVisible(false);
+//    barCustomGraph->axisRect()->insetLayout()->setInsetAlignment(0, Qt::AlignTop|Qt::AlignHCenter);
+//    barCustomGraph->legend->setBrush(QColor(255, 255, 255, 200));
+//    QPen legendPen;
+//    legendPen.setColor(QColor(130, 130, 130, 200));
+//    barCustomGraph->legend->setBorderPen(legendPen);
+//    QFont legendFont = font("Helvetica[Adobe]",12);
+//    legendFont.setPointSize(20);
+//    barCustomGraph->legend->setFont(legendFont);
     barCustomGraph->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom);
 }
-
 
 void MainWindow::xAxisRangeChanged( const QCPRange &newRange, const QCPRange &oldRange )
 {
@@ -185,7 +186,7 @@ void MainWindow::populateBarGraphActorsList()
     QCheckBox * actor;
     barGraphActorsCheckBoxList.clear();
     barGraphCheckedActorsIdList.clear();
-    actorCBList.clear();
+    barActorCBList.clear();
 
     QWidget* widget = new QWidget;
     QVBoxLayout *layout = new QVBoxLayout(widget);
@@ -214,7 +215,7 @@ void MainWindow::populateBarGraphActorsList()
         //setting all checkboxes as checked as initial condition
         barGraphCheckedActorsIdList.append(true);
         connect(actor,SIGNAL(toggled(bool)),this,SLOT(barGraphActorsCheckboxClicked(bool)));
-        actorCBList.append(actor);
+        barActorCBList.append(actor);
     }
     barGraphActorsScrollArea->setWidget(widget);
 }
@@ -314,16 +315,16 @@ QCPBars *MainWindow::createBar(int actorId)
 
 void MainWindow::barGraphSelectAllActorsCheckBoxClicked(bool Click)
 {
-    for(int index=0; index < actorCBList.length();++ index)
-        disconnect(actorCBList.at(index),SIGNAL(toggled(bool)),this,SLOT(barGraphActorsCheckboxClicked(bool)));
+    for(int index=0; index < barActorCBList.length();++ index)
+        disconnect(barActorCBList.at(index),SIGNAL(toggled(bool)),this,SLOT(barGraphActorsCheckboxClicked(bool)));
 
     for(int actors = 0 ; actors < barGraphCheckedActorsIdList.length(); ++actors)
     {
         barGraphCheckedActorsIdList[actors]=Click;
         barGraphActorsCheckBoxList[actors]->setChecked(Click);
     }
-    for(int index=0; index < actorCBList.length();++ index)
-        connect(actorCBList.at(index),SIGNAL(toggled(bool)),this,SLOT(barGraphActorsCheckboxClicked(bool)));
+    for(int index=0; index < barActorCBList.length();++ index)
+        connect(barActorCBList.at(index),SIGNAL(toggled(bool)),this,SLOT(barGraphActorsCheckboxClicked(bool)));
 
     barGraphTurnSliderChanged(barGraphTurnSlider->value());
 }
@@ -342,7 +343,8 @@ void MainWindow::barGraphActorsCheckboxClicked(bool click)
 void MainWindow::barGraphDimensionChanged(int value)
 {
     dimension=value;
-    title->setText(QString(barGraphDimensionComboBox->currentText() +" Iteration " +QString::number(barGraphTurnSlider->value())));
+    lineGraphDimensionComboBox->setCurrentIndex(value);
+    barGraphTitle->setText(QString(barGraphDimensionComboBox->currentText() +" Iteration " +QString::number(barGraphTurnSlider->value())));
     getActorsInRange(dimension);
     barCustomGraph->xAxis->setRange(0,110);
     barCustomGraph->yAxis->setRange(0,yAxisLen+20);
@@ -352,7 +354,7 @@ void MainWindow::barGraphDimensionChanged(int value)
 
 void MainWindow::barGraphTurnSliderChanged(int value)
 {
-    title->setText(QString(barGraphDimensionComboBox->currentText() +" Iteration " +QString::number(value)));
+    barGraphTitle->setText(QString(barGraphDimensionComboBox->currentText() +" Iteration " +QString::number(value)));
     getActorsInRange(dimension);
     barCustomGraph->xAxis->setRange(0,110);
     barCustomGraph->yAxis->setRange(0,yAxisLen+20);
@@ -369,79 +371,83 @@ void MainWindow::barGraphBinWidthButtonClicked(bool bl)
 
 void MainWindow::barGraphActorsSalienceCapability(QList<int> aId, QList<double> sal, QList<double> cap,double r1,double r2)
 {
-    if(!aId.isEmpty() && !barGraphCheckedActorsIdList.isEmpty())
+
+    if( barActorCBList.length() == lineActorCBList.length())
     {
-        actorsIdsClr.clear();
-        QVector <double> range;
-        QVector <double> stackedActorsSelected[100];
-        QVector <double> stackedActorsUnselected[100];
-
-        QCPBars * bar;
-        double barHeight = 0;
-
-        QList <QVector <double> > values ;
-        range<< ((r1+r2)/2) *100 ;
-
-        for (int stackedActorsInOneBar = 0 ; stackedActorsInOneBar < aId.length(); ++ stackedActorsInOneBar)
+        if(!aId.isEmpty() && !barGraphCheckedActorsIdList.isEmpty())
         {
-            if(barGraphCheckedActorsIdList.at(aId.at(stackedActorsInOneBar))==true)
+            actorsIdsClr.clear();
+            QVector <double> range;
+            QVector <double> stackedActorsSelected[100];
+            QVector <double> stackedActorsUnselected[100];
+
+            QCPBars * bar;
+            double barHeight = 0;
+
+            QList <QVector <double> > values ;
+            range<< ((r1+r2)/2) *100 ;
+
+            for (int stackedActorsInOneBar = 0 ; stackedActorsInOneBar < aId.length(); ++ stackedActorsInOneBar)
             {
-                stackedActorsSelected[stackedActorsInOneBar] << (sal.at(stackedActorsInOneBar) * cap.at(stackedActorsInOneBar));
-                values.append(stackedActorsSelected[stackedActorsInOneBar]);
-                actorsIdsClr.append(aId.at(stackedActorsInOneBar));
-                barHeight += (sal.at(stackedActorsInOneBar) * cap.at(stackedActorsInOneBar));
+                if(barGraphCheckedActorsIdList.at(aId.at(stackedActorsInOneBar))==true)
+                {
+                    stackedActorsSelected[stackedActorsInOneBar] << (sal.at(stackedActorsInOneBar) * cap.at(stackedActorsInOneBar));
+                    values.append(stackedActorsSelected[stackedActorsInOneBar]);
+                    actorsIdsClr.append(aId.at(stackedActorsInOneBar));
+                    barHeight += (sal.at(stackedActorsInOneBar) * cap.at(stackedActorsInOneBar));
+                }
             }
-        }
 
-        int sel = values.length();
+            int sel = values.length();
 
-        for (int stackedActorsInOneBar = 0 ; stackedActorsInOneBar < aId.length(); ++ stackedActorsInOneBar)
-        {
-            if(barGraphCheckedActorsIdList.at(aId.at(stackedActorsInOneBar))==false)
+            for (int stackedActorsInOneBar = 0 ; stackedActorsInOneBar < aId.length(); ++ stackedActorsInOneBar)
             {
-                stackedActorsUnselected[stackedActorsInOneBar] << (sal.at(stackedActorsInOneBar) * cap.at(stackedActorsInOneBar));
-                values.append(stackedActorsUnselected[stackedActorsInOneBar]);
-                barHeight += (sal.at(stackedActorsInOneBar) * cap.at(stackedActorsInOneBar));
+                if(barGraphCheckedActorsIdList.at(aId.at(stackedActorsInOneBar))==false)
+                {
+                    stackedActorsUnselected[stackedActorsInOneBar] << (sal.at(stackedActorsInOneBar) * cap.at(stackedActorsInOneBar));
+                    values.append(stackedActorsUnselected[stackedActorsInOneBar]);
+                    barHeight += (sal.at(stackedActorsInOneBar) * cap.at(stackedActorsInOneBar));
+                }
             }
-        }
 
-        for (int i =0; i < values.length(); ++i)
-        {
-            if(i < sel)
+            for (int i =0; i < values.length(); ++i)
             {
-                prevBar= bar;
-                bar = createBar(actorsIdsClr.at(i));
-                bar->setData(range,values.at(i));
+                if(i < sel)
+                {
+                    prevBar= bar;
+                    bar = createBar(actorsIdsClr.at(i));
+                    bar->setData(range,values.at(i));
 
-                if(i>0)
-                    bar->moveAbove(prevBar);
+                    if(i>0)
+                        bar->moveAbove(prevBar);
 
-                bars[barsCount].append(bar);
+                    bars[barsCount].append(bar);
+                }
+                else
+                {
+                    prevBar= bar;
+                    bar = createBar(aId.at(i));
+                    bar->setBrush(QColor(211,211,211,70));
+
+                    bar->setData(range,values.at(i));
+
+                    if(i>=sel && i >0)
+                        bar->moveAbove(prevBar);
+
+                    bars[barsCount].append(bar);
+                }
             }
+
+            if(barsCount < 100)
+                ++barsCount;
             else
+                barsCount=0;
+
+            if(barHeight>yAxisLen)
             {
-                prevBar= bar;
-                bar = createBar(aId.at(i));
-                bar->setBrush(QColor(211,211,211,70));
-
-                bar->setData(range,values.at(i));
-
-                if(i>=sel && i >0)
-                    bar->moveAbove(prevBar);
-
-                bars[barsCount].append(bar);
+                yAxisLen=barHeight;
+                barHeight=0;
             }
-        }
-
-        if(barsCount < 100)
-            ++barsCount;
-        else
-            barsCount=0;
-
-        if(barHeight>yAxisLen)
-        {
-            yAxisLen=barHeight;
-            barHeight=0;
         }
     }
 }

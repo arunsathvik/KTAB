@@ -101,9 +101,14 @@ void MainWindow::initializeLineGraphDock()
 
 }
 
-
 void MainWindow::initializeLineGraphPlot()
 {
+
+    QFont font("Helvetica[Adobe]",15);
+    lineGraphTitle = new QCPPlotTitle(lineCustomGraph,"Line Graph");
+    lineGraphTitle->setFont(font);
+    lineGraphTitle->setTextColor(QColor(255,51,51));
+
     lineCustomGraph->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectAxes |
                                      QCP::iSelectLegend | QCP::iSelectPlottables);
     lineCustomGraph->xAxis->setRange(0, 10);
@@ -111,19 +116,19 @@ void MainWindow::initializeLineGraphPlot()
     lineCustomGraph->axisRect()->setupFullAxesBox();
 
     lineCustomGraph->plotLayout()->insertRow(0);
-    lineCustomGraph->plotLayout()->addElement(0, 0, new QCPPlotTitle(lineCustomGraph, "Competitive vs Time "));
+    lineCustomGraph->plotLayout()->addElement(0, 0,lineGraphTitle);
 
-    lineCustomGraph->xAxis->setLabel("Turn");
-    lineCustomGraph->yAxis->setLabel("Competitive");
+    lineCustomGraph->xAxis->setLabel("Time");
+    lineCustomGraph->yAxis->setLabel(" ");
     lineCustomGraph->legend->setVisible(false);
 
-//    QFont legendFont = font();
-//    legendFont.setPointSize(10);
-//    lineCustomGraph->legend->setFont(legendFont);
-//    lineCustomGraph->legend->setSelectedFont(legendFont);
-//    lineCustomGraph->legend->setSelectableParts(QCPLegend::spItems); // legend box shall not be selectable, only legend items
+    //    QFont legendFont = font();
+    //    legendFont.setPointSize(10);
+    //    lineCustomGraph->legend->setFont(legendFont);
+    //    lineCustomGraph->legend->setSelectedFont(legendFont);
+    //    lineCustomGraph->legend->setSelectableParts(QCPLegend::spItems); // legend box shall not be selectable, only legend items
 
-//    connect(lineCustomGraph, SIGNAL(legendClick(QCPLegend*,QCPAbstractLegendItem*,QMouseEvent*)), this, SLOT(selectionChanged()));
+    //    connect(lineCustomGraph, SIGNAL(legendClick(QCPLegend*,QCPAbstractLegendItem*,QMouseEvent*)), this, SLOT(selectionChanged()));
     // connect slot that ties some axis selections together (especially opposite axes):
     connect(lineCustomGraph, SIGNAL(selectionChangedByUser()), this, SLOT(selectionChanged()));
     // connect slots that takes care that when an axis is selected, only that direction can be dragged and zoomed:
@@ -147,20 +152,136 @@ void MainWindow::initializeLineGraphPlot()
     connect(lineCustomGraph, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(contextMenuRequest(QPoint)));
 }
 
-void MainWindow::lineGraphSelectAllActorsCheckBoxClicked(bool)
+void MainWindow::populateLineGraphActorsList()
 {
+    QCheckBox * actor;
+    lineGraphActorsCheckBoxList.clear();
+    lineGraphCheckedActorsIdList.clear();
+    lineActorCBList.clear();
+
+    QWidget* widget = new QWidget;
+    QVBoxLayout *layout = new QVBoxLayout(widget);
+
+    for(int actorsCount = 0; actorsCount < actorsName.count(); ++actorsCount)
+    {
+        actor = new QCheckBox(actorsName.at(actorsCount));
+        actor->setChecked(true);
+
+        QColor mycolor = colorsList.at(actorsCount);
+
+        QString style = "background: rgb(%1, %2, %3);";
+        style = style.arg(mycolor.red()).arg(mycolor.green()).arg(mycolor.blue());
+        style += "color:white; font-size:15px;";
+        style += "font-weight:bold;";
+
+        actor->setStyleSheet(style);
+
+        actor->setObjectName(QString::number(actorsCount));
+
+        layout->addWidget(actor);
+        layout->stretch(0);
+
+        lineGraphActorsCheckBoxList.append(actor);
+
+        //setting all checkboxes as checked as initial condition
+        lineGraphCheckedActorsIdList.append(true);
+        connect(actor,SIGNAL(toggled(bool)),this,SLOT(lineGraphActorsCheckboxClicked(bool)));
+        lineActorCBList.append(actor);
+    }
+    lineGraphActorsScrollArea->setWidget(widget);
+}
+
+void MainWindow::populateLineGraphDimensions(int dim)
+{
+    Q_UNUSED(dim)
+
+    disconnect(lineGraphDimensionComboBox,SIGNAL(currentIndexChanged(int)),this,SLOT(lineGraphDimensionChanged(int)));
+    lineGraphDimensionComboBox->clear();
+    lineGraphDimensionComboBox->addItem(" ");
+    for(int dims = 0; dims < dimensionList.length(); ++ dims )
+    {
+        lineGraphDimensionComboBox->addItem(dimensionList.at(dims));
+    }
+    connect(lineGraphDimensionComboBox,SIGNAL(currentIndexChanged(int)),this,SLOT(lineGraphDimensionChanged(int)));
+    lineGraphDimensionComboBox->removeItem(0);
+     qDebug()<<"first Here";
+}
+
+
+void MainWindow::updateLineDimension(QStringList *dims)
+{
+    QStringList  dimenList;
+    for(int index=0;index<dims->length();++index)
+    {
+        dimenList.append(dims->at(index));
+    }
+    int lineDimIndex = lineGraphDimensionComboBox->currentIndex();
+
+    disconnect(lineGraphDimensionComboBox,SIGNAL(currentIndexChanged(int)),this,SLOT(lineGraphDimensionChanged(int)));
+    lineGraphDimensionComboBox->clear();
+    for(int dims = 0; dims < dimenList.length(); ++ dims )
+    {
+        lineGraphDimensionComboBox->addItem(dimenList.at(dims));
+    }
+    connect(lineGraphDimensionComboBox,SIGNAL(currentIndexChanged(int)),this,SLOT(lineGraphDimensionChanged(int)));
+    lineGraphDimensionComboBox->currentIndexChanged(lineDimIndex);
+    qDebug()<<"Here";
+}
+
+void MainWindow::populateLineGraphStateRange(int states)
+{
+    lineGraphTurnSlider->setRange(0,states);
+    connect(turnSlider,SIGNAL(valueChanged(int)),lineGraphTurnSlider,SLOT(setValue(int)));
+}
+
+void MainWindow::lineGraphSelectAllActorsCheckBoxClicked(bool click)
+{
+    for(int index=0; index < barActorCBList.length();++ index)
+        disconnect(lineActorCBList.at(index),SIGNAL(toggled(bool)),this,SLOT(lineGraphActorsCheckboxClicked(bool)));
+
+    for(int actors = 0 ; actors < lineGraphCheckedActorsIdList.length(); ++actors)
+    {
+        lineGraphCheckedActorsIdList[actors]=click;
+        lineGraphActorsCheckBoxList[actors]->setChecked(click);
+    }
+    for(int index=0; index < lineActorCBList.length();++ index)
+        connect(lineActorCBList.at(index),SIGNAL(toggled(bool)),this,SLOT(lineGraphActorsCheckboxClicked(bool)));
+
+    lineGraphTurnSliderChanged(lineGraphTurnSlider->value());
+}
+
+void MainWindow::lineGraphDimensionChanged(int value)
+{
+    dimension=value;
+    barGraphDimensionComboBox->setCurrentIndex(value);
+
+    lineGraphTitle->setText(QString(lineGraphDimensionComboBox->currentText()
+                                    + " vs Time, Iteration " +
+                                    QString::number(lineGraphTurnSlider->value())));
+    lineCustomGraph->yAxis->setLabel(lineGraphDimensionComboBox->currentText());
+    lineCustomGraph->replot();
+}
+
+void MainWindow::lineGraphTurnSliderChanged(int value)
+{
+    lineGraphTitle->setText(QString(lineGraphDimensionComboBox->currentText()
+                                    + " vs Time, Iteration " +
+                                    QString::number(lineGraphTurnSlider->value())));
+    lineCustomGraph->yAxis->setLabel(lineGraphDimensionComboBox->currentText());
+    lineCustomGraph->replot();
 
 }
 
-void MainWindow::lineGraphDimensionChanged(int indx)
+void MainWindow::lineGraphActorsCheckboxClicked(bool click)
 {
+    QCheckBox * actorCheckBox = qobject_cast<QCheckBox *>(sender());
+    quint8 actorId = actorCheckBox->objectName().toInt();
 
+    lineGraphCheckedActorsIdList[actorId]=click;
+
+    lineGraphTurnSliderChanged(lineGraphTurnSlider->value());
 }
 
-void MainWindow::lineGraphTurnSliderChanged(int)
-{
-
-}
 void MainWindow::titleDoubleClick(QMouseEvent* event, QCPPlotTitle* title)
 {
     Q_UNUSED(event)
@@ -204,7 +325,7 @@ void MainWindow::mouseWheel()
 void MainWindow::addGraphOnModule1(const QVector<double> &x, const QVector<double> &y,QString Actor)
 {
     lineCustomGraph->addGraph();
-//    lineCustomGraph->graph()->setName(Actor);
+    //    lineCustomGraph->graph()->setName(Actor);
     lineCustomGraph->graph()->setData(x, y);
     lineCustomGraph->graph()->setLineStyle(((QCPGraph::LineStyle)(1)));//upto 5
 
