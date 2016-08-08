@@ -27,8 +27,7 @@
 #include <QMainWindow>
 #include "csv.h"
 #include "database.h"
-#include "../../qcustomplot/qcustomplot.h"
-
+#include "../qcustomplot/qcustomplot.h"
 
 #include <QtSql>
 #include <QSqlQuery>
@@ -321,12 +320,14 @@ private :
 
     QCPPlotTitle * lineGraphTitle;
 
+
 private slots :
     void lineGraphSelectAllActorsCheckBoxClicked(bool click);
     void lineGraphDimensionChanged(int value);
     void lineGraphTurnSliderChanged(int);
     void lineGraphActorsCheckboxClicked(bool click);
     void updateLineDimension(QStringList *dims);
+
 };
 
 

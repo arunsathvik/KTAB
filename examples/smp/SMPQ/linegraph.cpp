@@ -111,8 +111,7 @@ void MainWindow::initializeLineGraphPlot()
 
     lineCustomGraph->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectAxes |
                                      QCP::iSelectLegend | QCP::iSelectPlottables);
-    lineCustomGraph->xAxis->setRange(0, 10);
-    lineCustomGraph->yAxis->setRange(0,100);
+
     lineCustomGraph->axisRect()->setupFullAxesBox();
 
     lineCustomGraph->plotLayout()->insertRow(0);
@@ -122,6 +121,39 @@ void MainWindow::initializeLineGraphPlot()
     lineCustomGraph->yAxis->setLabel(" ");
     lineCustomGraph->legend->setVisible(false);
 
+
+    lineCustomGraph->xAxis->setAutoTicks(false);
+    lineCustomGraph->xAxis->setAutoTickLabels(false);
+
+    QVector<double> xAxisTicks;
+    QVector<QString> xAxisLabels;
+
+    for(int i =0 ; i < 50 ; ++i)
+    {
+        xAxisTicks <<i;
+        xAxisLabels<<QString::number(i);
+    }
+    lineCustomGraph->xAxis->setTickVector(xAxisTicks);
+    lineCustomGraph->xAxis->setTickVectorLabels(xAxisLabels);
+    lineCustomGraph->xAxis->setRange(0, 10);
+
+    QVector<double> yAxisTicks;
+    QVector<QString> yAxisLabels;
+
+    for(int i =0 ; i <= 100 ;i+=10)
+    {
+        yAxisTicks <<i;
+        yAxisLabels<<QString::number(i);
+    }
+    lineCustomGraph->yAxis->setAutoTicks(false);
+    lineCustomGraph->yAxis->setAutoTickLabels(false);
+    lineCustomGraph->yAxis->setTickStep(10.0);
+    lineCustomGraph->yAxis->setTickVector(yAxisTicks);
+    lineCustomGraph->yAxis->setTickVectorLabels(yAxisLabels);
+    lineCustomGraph->yAxis->setRange(0,100);
+
+    lineCustomGraph->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom);
+
     //    QFont legendFont = font();
     //    legendFont.setPointSize(10);
     //    lineCustomGraph->legend->setFont(legendFont);
@@ -130,7 +162,7 @@ void MainWindow::initializeLineGraphPlot()
 
     //    connect(lineCustomGraph, SIGNAL(legendClick(QCPLegend*,QCPAbstractLegendItem*,QMouseEvent*)), this, SLOT(selectionChanged()));
     // connect slot that ties some axis selections together (especially opposite axes):
-    connect(lineCustomGraph, SIGNAL(selectionChangedByUser()), this, SLOT(selectionChanged()));
+    //connect(lineCustomGraph, SIGNAL(selectionChangedByUser()), this, SLOT(selectionChanged()));
     // connect slots that takes care that when an axis is selected, only that direction can be dragged and zoomed:
     connect(lineCustomGraph, SIGNAL(mousePress(QMouseEvent*)), this, SLOT(mousePress()));
     connect(lineCustomGraph, SIGNAL(mouseWheel(QWheelEvent*)), this, SLOT(mouseWheel()));
@@ -204,7 +236,7 @@ void MainWindow::populateLineGraphDimensions(int dim)
     }
     connect(lineGraphDimensionComboBox,SIGNAL(currentIndexChanged(int)),this,SLOT(lineGraphDimensionChanged(int)));
     lineGraphDimensionComboBox->removeItem(0);
-     qDebug()<<"first Here";
+    qDebug()<<"first Here";
 }
 
 
@@ -230,6 +262,7 @@ void MainWindow::updateLineDimension(QStringList *dims)
 
 void MainWindow::populateLineGraphStateRange(int states)
 {
+    lineCustomGraph->xAxis->setRange(0, states+1);
     lineGraphTurnSlider->setRange(0,states);
     connect(turnSlider,SIGNAL(valueChanged(int)),lineGraphTurnSlider,SLOT(setValue(int)));
 }
@@ -247,7 +280,10 @@ void MainWindow::lineGraphSelectAllActorsCheckBoxClicked(bool click)
     for(int index=0; index < lineActorCBList.length();++ index)
         connect(lineActorCBList.at(index),SIGNAL(toggled(bool)),this,SLOT(lineGraphActorsCheckboxClicked(bool)));
 
-    lineGraphTurnSliderChanged(lineGraphTurnSlider->value());
+    lineCustomGraph->clearGraphs();
+    emit getScenarioRunValues(lineGraphTurnSlider->value(),scenarioBox,dimension);
+    lineCustomGraph->replot();
+
 }
 
 void MainWindow::lineGraphDimensionChanged(int value)
@@ -259,6 +295,9 @@ void MainWindow::lineGraphDimensionChanged(int value)
                                     + " vs Time, Iteration " +
                                     QString::number(lineGraphTurnSlider->value())));
     lineCustomGraph->yAxis->setLabel(lineGraphDimensionComboBox->currentText());
+
+    lineCustomGraph->clearGraphs();
+    emit getScenarioRunValues(lineGraphTurnSlider->value(),scenarioBox,dimension);
     lineCustomGraph->replot();
 }
 
@@ -266,8 +305,12 @@ void MainWindow::lineGraphTurnSliderChanged(int value)
 {
     lineGraphTitle->setText(QString(lineGraphDimensionComboBox->currentText()
                                     + " vs Time, Iteration " +
-                                    QString::number(lineGraphTurnSlider->value())));
+                                    QString::number(value)));
     lineCustomGraph->yAxis->setLabel(lineGraphDimensionComboBox->currentText());
+
+
+    lineCustomGraph->clearGraphs();
+    emit getScenarioRunValues(lineGraphTurnSlider->value(),scenarioBox,dimension);
     lineCustomGraph->replot();
 
 }
@@ -279,7 +322,12 @@ void MainWindow::lineGraphActorsCheckboxClicked(bool click)
 
     lineGraphCheckedActorsIdList[actorId]=click;
 
-    lineGraphTurnSliderChanged(lineGraphTurnSlider->value());
+    //    lineGraphTurnSliderChanged(lineGraphTurnSlider->value());
+
+    lineCustomGraph->clearGraphs();
+    emit getScenarioRunValues(lineGraphTurnSlider->value(),scenarioBox,dimension);
+    lineCustomGraph->replot();
+
 }
 
 void MainWindow::titleDoubleClick(QMouseEvent* event, QCPPlotTitle* title)
@@ -324,27 +372,35 @@ void MainWindow::mouseWheel()
 
 void MainWindow::addGraphOnModule1(const QVector<double> &x, const QVector<double> &y,QString Actor)
 {
-    lineCustomGraph->addGraph();
-    //    lineCustomGraph->graph()->setName(Actor);
-    lineCustomGraph->graph()->setData(x, y);
-    lineCustomGraph->graph()->setLineStyle(((QCPGraph::LineStyle)(1)));//upto 5
+    if(lineGraphCheckedActorsIdList.at(actorsName.indexOf(Actor))==true)
+    {
+        lineCustomGraph->addGraph();
+        lineCustomGraph->graph()->setName(Actor);
+        lineCustomGraph->graph()->setData(x, y);
+        lineCustomGraph->graph()->setLineStyle(((QCPGraph::LineStyle)(1)));//upto 5
 
-    //  if (rand()%100 > 50)
-    lineCustomGraph->graph()->setScatterStyle(QCPScatterStyle((QCPScatterStyle::ScatterShape)(0)));
+        QString actorDetails;
+        actorDetails.append("Name: " +Actor + "\n");
+        actorDetails.append("Description: " +actorsDescription.at(actorsName.indexOf(Actor)) + "\n");
+        actorDetails.append("Influence: " +actorsInfl.at(actorsName.indexOf(Actor)));
 
-    QPen graphPen;
-    graphPen.setColor(QColor(rand()%245+10, rand()%245+10, rand()%245+10));
-    graphPen.setWidthF(rand()/(double)RAND_MAX*2+1);
+        lineCustomGraph->graph()->setTooltip(actorDetails);
 
-    lineCustomGraph->graph()->setPen(graphPen);
-    lineCustomGraph->replot();
+        //  if (rand()%100 > 50)
+        lineCustomGraph->graph()->setScatterStyle(QCPScatterStyle((QCPScatterStyle::ScatterShape)(0)));
 
+        QPen graphPen;
+        graphPen.setColor(colorsList.at(actorsName.indexOf(Actor)));
+        graphPen.setWidthF(2.0);
+
+        lineCustomGraph->graph()->setPen(graphPen);
+
+    }
 }
 
 void MainWindow::removeAllGraphs()
 {
     lineCustomGraph->clearGraphs();
-    lineCustomGraph->replot();
 }
 
 void MainWindow::contextMenuRequest(QPoint pos)

@@ -225,6 +225,7 @@ void MainWindow::sliderStateValueToQryDB(int value)
         scenarioBox = mScenarioIds.at(scenarioComboBox->currentIndex());
         removeAllGraphs();
         emit getScenarioRunValues(value,scenarioBox,dimension);
+        lineCustomGraph->replot();
 
         //csv- DB
         emit getInfluence(value);
@@ -251,6 +252,7 @@ void MainWindow::scenarioComboBoxValue(int scenario)
         if(tableType=="Database")
         {
             emit getScenarioRunValues(turnSlider->value(),scenarioBox,dimension); // to keep the same state when scenario changes
+            lineCustomGraph->replot();
             emit getStateCountfromDB();
 
             barGraphTurnSliderChanged(barGraphTurnSlider->value());

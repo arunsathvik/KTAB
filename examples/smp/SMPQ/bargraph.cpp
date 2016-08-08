@@ -309,6 +309,8 @@ QCPBars *MainWindow::createBar(int actorId)
     bar->setName("actorId");
     bar->setObjectName(QString::number(actorId));
     bar->setSelectable(true);
+        bar->setSelectedBrush(colorsList.at(99));
+        bar->setSelectedPen(pen);
 
     return bar;
 }
