@@ -105,7 +105,6 @@ private:
     QList <double> actorCapabilityList;
 
 
-
     void getVectorPosition(int actor, int dim, int turn, QString scenario);
 
     //Default read Turn_t=0

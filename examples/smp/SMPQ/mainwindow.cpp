@@ -126,6 +126,8 @@ void MainWindow::csvGetFilePAth(bool bl)
     {
         modeltoCSV->clear();
         emit csvFilePath(csvPath);
+
+        clearAllGraphs();
     }
     statusBar()->showMessage(tr(" "));
 
@@ -141,6 +143,9 @@ void MainWindow::dbGetFilePAth(bool bl)
     //emit path to db class for processing
     if(!dbPath.isEmpty())
     {
+        lineGraphDock->setEnabled(true);
+        barGraphDock->setEnabled(true);
+
         disconnect(scenarioComboBox,SIGNAL(currentIndexChanged(int)),this,SLOT(scenarioComboBoxValue(int)));
         disconnect(turnSlider,SIGNAL(valueChanged(int)),this,SLOT(sliderStateValueToQryDB(int)));
         mScenarioDesc.clear();
@@ -153,6 +158,7 @@ void MainWindow::dbGetFilePAth(bool bl)
         modeltoDB->clear();
         emit dbFilePath(dbPath);
 
+        reconnectPlotWidgetSignals();
         //To populate Line Graph Dimensions combo box
         populateLineGraphDimensions(dimensionsLineEdit->text().toInt());
         //To populate Bar Graph Dimensions combo box
@@ -180,6 +186,7 @@ void MainWindow::dbEditGetFilePAth(bool bl)
         }
         setDBItemModelEdit();
     }
+    clearAllGraphs();
 }
 
 void MainWindow::updateStateCountSliderRange(int states)
@@ -199,7 +206,11 @@ void MainWindow::updateScenarioListComboBox(QStringList * scenarios,QStringList*
         mScenarioDesc.append(scenarioDesc->at(index));
         mScenarioIds.append(scenarioIds->at(index));
         mScenarioName.append(scenarios->at(index));
+
+        disconnect(scenarioComboBox,SIGNAL(currentIndexChanged(int)),this,SLOT(scenarioComboBoxValue(int)));
         scenarioComboBox->addItem(scenarios->at(index));
+        connect(scenarioComboBox,SIGNAL(currentIndexChanged(int)),this,SLOT(scenarioComboBoxValue(int)));
+
     }
     scenarioBox = mScenarioIds.at(scenarioComboBox->currentIndex());
     scenarioDescriptionLineEdit->setText(mScenarioDesc.at(scenarioComboBox->currentIndex()));
@@ -602,6 +613,8 @@ void MainWindow::createNewCSV(bool bl)
 {
     Q_UNUSED(bl)
     tableType="NewCSV";
+
+    clearAllGraphs();
 
     if( stackWidget->count()>1 ) // 1 is csv_table view
     {
@@ -1395,6 +1408,43 @@ void MainWindow::actorsSalience(QList<QString> actorSalience,int dim)
     //    qDebug()<<actorsSalience[dim].at(0);
 }
 
+void MainWindow::clearAllGraphs()
+{
+    lineCustomGraph->clearGraphs();
+    lineGraphTitle->setText(" ");
+    barGraphTitle->setText(" ");
+
+    deleteBars();
+
+    lineCustomGraph->replot();
+    barCustomGraph->replot();
+
+    for(int index=0; index < lineActorCBList.length();++ index)
+    {
+        disconnect(lineActorCBList.at(index),SIGNAL(toggled(bool)),this,SLOT(lineGraphActorsCheckboxClicked(bool)));
+        disconnect(barActorCBList.at(index),SIGNAL(toggled(bool)),this,SLOT(barGraphActorsCheckboxClicked(bool)));
+    }
+
+    disconnect(lineGraphDimensionComboBox,SIGNAL(currentIndexChanged(int)),this,SLOT(lineGraphDimensionChanged(int)));
+    disconnect(barGraphDimensionComboBox,SIGNAL(currentIndexChanged(int)),this,SLOT(barGraphDimensionChanged(int)));
+    lineGraphDimensionComboBox->clear();
+    barGraphDimensionComboBox->clear();
+
+    disconnect(lineGraphSelectAllCheckBox,SIGNAL(clicked(bool)),this,SLOT(lineGraphSelectAllActorsCheckBoxClicked(bool)));
+    disconnect(barGraphSelectAllCheckBox,SIGNAL(clicked(bool)),this,SLOT(barGraphSelectAllActorsCheckBoxClicked(bool)));
+    disconnect(barGraphBinWidthButton,SIGNAL(clicked(bool)),this, SLOT(barGraphBinWidthButtonClicked(bool)));
+
+}
+void MainWindow :: reconnectPlotWidgetSignals()
+{
+    connect(lineGraphDimensionComboBox,SIGNAL(currentIndexChanged(int)),this,SLOT(lineGraphDimensionChanged(int)));
+    connect(barGraphDimensionComboBox,SIGNAL(currentIndexChanged(int)),this,SLOT(barGraphDimensionChanged(int)));
+    connect(lineGraphSelectAllCheckBox,SIGNAL(clicked(bool)),this,SLOT(lineGraphSelectAllActorsCheckBoxClicked(bool)));
+    connect(barGraphSelectAllCheckBox,SIGNAL(clicked(bool)),this,SLOT(barGraphSelectAllActorsCheckBoxClicked(bool)));
+
+    connect(barGraphBinWidthButton,SIGNAL(clicked(bool)),this, SLOT(barGraphBinWidthButtonClicked(bool)));
+
+}
 
 // --------------------------------------------
 // Copyright KAPSARC. Open source MIT License.

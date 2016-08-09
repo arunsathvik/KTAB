@@ -79,7 +79,7 @@ void MainWindow::initializeBarGraphDock()
     barControlsVerticalLayout->addWidget(barGraphDimensionComboBox);
     connect(barGraphDimensionComboBox,SIGNAL(currentIndexChanged(int)),this,SLOT(barGraphDimensionChanged(int)));
 
-    QPushButton * barGraphBinWidthButton = new QPushButton("No. of Bars");
+    barGraphBinWidthButton = new QPushButton("No. of Bars");
     barGraphBinWidthButton->setFont(labelFont);
     barControlsVerticalLayout->addWidget(barGraphBinWidthButton);
     connect(barGraphBinWidthButton,SIGNAL(clicked(bool)),this, SLOT(barGraphBinWidthButtonClicked(bool)));
@@ -110,8 +110,7 @@ void MainWindow::initializeBarGraphPlot()
     barGraphTitle->setTextColor(QColor(51,51,255));
 
     barCustomGraph->plotLayout()->insertRow(0);
-    barCustomGraph->plotLayout()->addElement(
-                0, 0, barGraphTitle);
+    barCustomGraph->plotLayout()->addElement(0, 0, barGraphTitle);
 
     barCustomGraph->xAxis->setAutoTicks(true);
     barCustomGraph->xAxis->setAutoTickLabels(true);
@@ -134,14 +133,14 @@ void MainWindow::initializeBarGraphPlot()
 
     // setup legend:
     barCustomGraph->legend->setVisible(false);
-//    barCustomGraph->axisRect()->insetLayout()->setInsetAlignment(0, Qt::AlignTop|Qt::AlignHCenter);
-//    barCustomGraph->legend->setBrush(QColor(255, 255, 255, 200));
-//    QPen legendPen;
-//    legendPen.setColor(QColor(130, 130, 130, 200));
-//    barCustomGraph->legend->setBorderPen(legendPen);
-//    QFont legendFont = font("Helvetica[Adobe]",12);
-//    legendFont.setPointSize(20);
-//    barCustomGraph->legend->setFont(legendFont);
+    //    barCustomGraph->axisRect()->insetLayout()->setInsetAlignment(0, Qt::AlignTop|Qt::AlignHCenter);
+    //    barCustomGraph->legend->setBrush(QColor(255, 255, 255, 200));
+    //    QPen legendPen;
+    //    legendPen.setColor(QColor(130, 130, 130, 200));
+    //    barCustomGraph->legend->setBorderPen(legendPen);
+    //    QFont legendFont = font("Helvetica[Adobe]",12);
+    //    legendFont.setPointSize(20);
+    //    barCustomGraph->legend->setFont(legendFont);
     barCustomGraph->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom);
 }
 
@@ -217,6 +216,7 @@ void MainWindow::populateBarGraphActorsList()
         connect(actor,SIGNAL(toggled(bool)),this,SLOT(barGraphActorsCheckboxClicked(bool)));
         barActorCBList.append(actor);
     }
+
     barGraphActorsScrollArea->setWidget(widget);
 }
 
@@ -268,16 +268,8 @@ void MainWindow::generateColors()
 
 void MainWindow::getActorsInRange(int dim)
 {
-    for(int i= 0; i < 100; ++i)
-    {
-        if(!bars[i].isEmpty())
-        {
-            qDeleteAll(bars[i].begin(),bars[i].end());
-            bars[i].clear();
-        }
-    }
+    deleteBars();
 
-    barsCount=0;
     //calculating bin_width
     double numberOfBins = barGraphGroupRangeLineEdit->text().toDouble();
     double lowerRange = 0.0;
@@ -296,6 +288,20 @@ void MainWindow::getActorsInRange(int dim)
     }
 }
 
+void MainWindow::deleteBars()
+{
+    for(int i= 0; i < 100; ++i)
+    {
+        if(!bars[i].isEmpty())
+        {
+            qDeleteAll(bars[i].begin(),bars[i].end());
+            bars[i].clear();
+        }
+    }
+
+    barsCount=0;
+}
+
 QCPBars *MainWindow::createBar(int actorId)
 {
     QCPBars *bar = new QCPBars(barCustomGraph->xAxis, barCustomGraph->yAxis);
@@ -309,8 +315,8 @@ QCPBars *MainWindow::createBar(int actorId)
     bar->setName("actorId");
     bar->setObjectName(QString::number(actorId));
     bar->setSelectable(true);
-        bar->setSelectedBrush(colorsList.at(99));
-        bar->setSelectedPen(pen);
+    bar->setSelectedBrush(colorsList.at(99));
+    bar->setSelectedPen(pen);
 
     return bar;
 }

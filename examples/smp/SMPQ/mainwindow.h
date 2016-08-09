@@ -221,7 +221,6 @@ private:
     QStringList dimensionList;
 
 
-
 private slots:
     void titleDoubleClick(QMouseEvent *event, QCPPlotTitle *barGraphTitle);
     //    void axisLabelDoubleClick(QCPAxis* axis, QCPAxis::SelectablePart part);
@@ -247,6 +246,7 @@ private :
     void generateColors();
     void getActorsInRange(int dim);
     void setStackedBars();
+    void deleteBars();
 
     QCPBars *createBar(int actorId);
 
@@ -265,6 +265,8 @@ private :
     QSlider * barGraphTurnSlider;
     QList <QCheckBox *> barGraphActorsCheckBoxList;
     QList <bool> barGraphCheckedActorsIdList;
+    QPushButton * barGraphBinWidthButton;
+
 
     QList<QCPBars *> bars[100];
     QCPBars * prevBar;
@@ -304,6 +306,10 @@ private :
     void populateLineGraphDimensions(int dim);
     void populateLineGraphStateRange(int states);
 
+
+    void clearAllGraphs();
+    void reconnectPlotWidgetSignals();
+
     QFrame * lineGraphControlsFrame;
     QScrollArea *lineGraphActorsScrollArea;
     QCheckBox *lineGraphSelectAllCheckBox;
@@ -319,6 +325,11 @@ private :
     QList <QCheckBox * > lineActorCBList;
 
     QCPPlotTitle * lineGraphTitle;
+
+    int numStates;
+
+    QList <QCPItemText * > lineLabel0List;
+    QList <QCPItemText * > lineLabelNList;
 
 
 private slots :

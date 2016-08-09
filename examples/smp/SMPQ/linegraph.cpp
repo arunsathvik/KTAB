@@ -135,7 +135,7 @@ void MainWindow::initializeLineGraphPlot()
     }
     lineCustomGraph->xAxis->setTickVector(xAxisTicks);
     lineCustomGraph->xAxis->setTickVectorLabels(xAxisLabels);
-    lineCustomGraph->xAxis->setRange(0, 10);
+    lineCustomGraph->xAxis->setRange(-1, 10);
 
     QVector<double> yAxisTicks;
     QVector<QString> yAxisLabels;
@@ -220,6 +220,7 @@ void MainWindow::populateLineGraphActorsList()
         connect(actor,SIGNAL(toggled(bool)),this,SLOT(lineGraphActorsCheckboxClicked(bool)));
         lineActorCBList.append(actor);
     }
+
     lineGraphActorsScrollArea->setWidget(widget);
 }
 
@@ -236,7 +237,6 @@ void MainWindow::populateLineGraphDimensions(int dim)
     }
     connect(lineGraphDimensionComboBox,SIGNAL(currentIndexChanged(int)),this,SLOT(lineGraphDimensionChanged(int)));
     lineGraphDimensionComboBox->removeItem(0);
-    qDebug()<<"first Here";
 }
 
 
@@ -257,19 +257,19 @@ void MainWindow::updateLineDimension(QStringList *dims)
     }
     connect(lineGraphDimensionComboBox,SIGNAL(currentIndexChanged(int)),this,SLOT(lineGraphDimensionChanged(int)));
     lineGraphDimensionComboBox->currentIndexChanged(lineDimIndex);
-    qDebug()<<"Here";
 }
 
 void MainWindow::populateLineGraphStateRange(int states)
 {
-    lineCustomGraph->xAxis->setRange(0, states+1);
+    lineCustomGraph->xAxis->setRange(-1, states+1);
+    numStates = states;
     lineGraphTurnSlider->setRange(0,states);
     connect(turnSlider,SIGNAL(valueChanged(int)),lineGraphTurnSlider,SLOT(setValue(int)));
 }
 
 void MainWindow::lineGraphSelectAllActorsCheckBoxClicked(bool click)
 {
-    for(int index=0; index < barActorCBList.length();++ index)
+    for(int index=0; index < lineActorCBList.length();++ index)
         disconnect(lineActorCBList.at(index),SIGNAL(toggled(bool)),this,SLOT(lineGraphActorsCheckboxClicked(bool)));
 
     for(int actors = 0 ; actors < lineGraphCheckedActorsIdList.length(); ++actors)
@@ -374,6 +374,32 @@ void MainWindow::addGraphOnModule1(const QVector<double> &x, const QVector<doubl
 {
     if(lineGraphCheckedActorsIdList.at(actorsName.indexOf(Actor))==true)
     {
+        if(lineGraphTurnSlider->value()==numStates)
+        {
+            QCPItemText *textLabel = new QCPItemText(lineCustomGraph);
+            textLabel->setText(Actor);
+            textLabel->setColor(colorsList.at(actorsName.indexOf(Actor)));
+            textLabel->position->setCoords(x.at(numStates)+0.3,y.at(numStates)+0.2);
+
+            lineCustomGraph->addItem(textLabel);
+            lineLabel0List.append(textLabel);
+        }
+        else if(lineGraphTurnSlider->value()==0)
+        {
+            QCPItemText *textLabel = new QCPItemText(lineCustomGraph);
+            textLabel->setText(Actor);
+            textLabel->setColor(colorsList.at(actorsName.indexOf(Actor)));
+            textLabel->position->setCoords(x.at(0)-0.5,y.at(0)+0.2);
+
+            lineCustomGraph->addItem(textLabel);
+            lineLabelNList.append(textLabel);
+        }
+        //        else if(lineLabelNList.length() != 0 )
+        //        {
+        //            for(int i=0; i< lineLabelNList.length();++i)
+        //                lineCustomGraph->removeItem(lineLabelNList.at(i));
+        //        }
+
         lineCustomGraph->addGraph();
         lineCustomGraph->graph()->setName(Actor);
         lineCustomGraph->graph()->setData(x, y);
