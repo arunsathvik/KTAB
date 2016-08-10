@@ -105,7 +105,7 @@ void MainWindow::initializeBarGraphDock()
 void MainWindow::initializeBarGraphPlot()
 {
     QFont font("Helvetica[Adobe]",15);
-    barGraphTitle = new QCPPlotTitle(barCustomGraph,"Bar Graph");
+    barGraphTitle = new QCPPlotTitle(barCustomGraph," ");
     barGraphTitle->setFont(font);
     barGraphTitle->setTextColor(QColor(51,51,255));
 
@@ -118,7 +118,6 @@ void MainWindow::initializeBarGraphPlot()
     barCustomGraph->xAxis->setSubTickCount(0);
     barCustomGraph->xAxis->setTickLength(0,5);
     barCustomGraph->xAxis->grid()->setVisible(true);
-
 
     barCustomGraph->yAxis->setAutoTicks(true);
     barCustomGraph->yAxis->setAutoTickLabels(true);
@@ -141,7 +140,7 @@ void MainWindow::initializeBarGraphPlot()
     //    QFont legendFont = font("Helvetica[Adobe]",12);
     //    legendFont.setPointSize(20);
     //    barCustomGraph->legend->setFont(legendFont);
-    barCustomGraph->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom);
+    barCustomGraph->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
 }
 
 void MainWindow::xAxisRangeChanged( const QCPRange &newRange, const QCPRange &oldRange )
@@ -216,7 +215,6 @@ void MainWindow::populateBarGraphActorsList()
         connect(actor,SIGNAL(toggled(bool)),this,SLOT(barGraphActorsCheckboxClicked(bool)));
         barActorCBList.append(actor);
     }
-
     barGraphActorsScrollArea->setWidget(widget);
 }
 
@@ -243,7 +241,6 @@ void MainWindow::populateBarGraphStateRange(int states)
 
 void MainWindow::generateColors()
 {
-
     colorsList << QColor(220,20,60)<< QColor(255,215,0)<< QColor(175,238,238)<<QColor(0,0,205)
                << QColor(165,42,42)<<QColor(34,139,34)<<QColor(218,165,32)<< QColor (95,158,160)
                << QColor(199,21,133)<<QColor(205,50,205)<<QColor(245,205,250)<<QColor(0,206,209)
@@ -314,9 +311,12 @@ QCPBars *MainWindow::createBar(int actorId)
     //    bar->setBrush(colorsList.at (in));
     bar->setName("actorId");
     bar->setObjectName(QString::number(actorId));
-    bar->setSelectable(true);
-    bar->setSelectedBrush(colorsList.at(99));
-    bar->setSelectedPen(pen);
+    bar->setSelectable(false);
+
+    //    QPen pen1;
+    //    pen1.setColor(QColor(0,0,0));
+    //    bar->setSelectedBrush(QColor(211,211,211,30));
+    //    bar->setSelectedPen(pen1);
 
     return bar;
 }

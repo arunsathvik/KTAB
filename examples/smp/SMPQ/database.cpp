@@ -305,7 +305,7 @@ void Database::getVectorPosition(int actor, int dim, int turn, QString scenario)
         actorName = qry2.value(2).toString();
     }
 
-    emit vectorPosition(x,y,actorName);
+     emit vectorPosition(x,y,actorName);
 }
 
 void Database::readVectorPositionTable(int turn, QString scenario, int dim)

@@ -135,6 +135,8 @@ void MainWindow::csvGetFilePAth(bool bl)
 
 void MainWindow::dbGetFilePAth(bool bl)
 {
+    clearAllLabels();
+
     Q_UNUSED(bl)
     statusBar()->showMessage(tr("Looking for Database file ..."));
     //Get  *.db file path
@@ -255,6 +257,7 @@ void MainWindow::sliderStateValueToQryDB(int value)
 void MainWindow::scenarioComboBoxValue(int scenario)
 {
     removeAllGraphs();
+    clearAllLabels();
 
     if(scenario>=0 && mScenarioIds.length()>0)
     {
@@ -1393,19 +1396,16 @@ void MainWindow::actorsNameDesc(QList <QString> actorName,QList <QString> actorD
 void MainWindow::actorsInfluence(QList<QString> actorInfluence)
 {
     actorsInfl=actorInfluence;
-    //qDebug()<<actorsInfl.count() <<"actorsInfluence";
 }
 
 void MainWindow::actorsPosition(QList<QString> actorPosition, int dim)
 {
     actorsPos[dim]=actorPosition;
-    //    qDebug()<<actorsPosition[dim].at(1);
 }
 
 void MainWindow::actorsSalience(QList<QString> actorSalience,int dim)
 {
     actorsSal[dim]=actorSalience;
-    //    qDebug()<<actorsSalience[dim].at(0);
 }
 
 void MainWindow::clearAllGraphs()
@@ -1435,6 +1435,7 @@ void MainWindow::clearAllGraphs()
     disconnect(barGraphBinWidthButton,SIGNAL(clicked(bool)),this, SLOT(barGraphBinWidthButtonClicked(bool)));
 
 }
+
 void MainWindow :: reconnectPlotWidgetSignals()
 {
     connect(lineGraphDimensionComboBox,SIGNAL(currentIndexChanged(int)),this,SLOT(lineGraphDimensionChanged(int)));

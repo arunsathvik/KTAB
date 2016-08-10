@@ -306,7 +306,7 @@ private :
     void populateLineGraphDimensions(int dim);
     void populateLineGraphStateRange(int states);
 
-
+    void clearAllLabels();
     void clearAllGraphs();
     void reconnectPlotWidgetSignals();
 
@@ -328,8 +328,9 @@ private :
 
     int numStates;
 
-    QList <QCPItemText * > lineLabel0List;
-    QList <QCPItemText * > lineLabelNList;
+    QList <bool> lineLabelToggleList;
+    QList <QCPItemText * > lineLabelList;
+    QCPItemText *textLabel ;
 
 
 private slots :
@@ -338,6 +339,7 @@ private slots :
     void lineGraphTurnSliderChanged(int);
     void lineGraphActorsCheckboxClicked(bool click);
     void updateLineDimension(QStringList *dims);
+    void toggleLabels();
 
 };
 

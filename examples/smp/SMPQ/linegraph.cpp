@@ -70,6 +70,7 @@ void MainWindow::initializeLineGraphDock()
     lineGraphRadioButton = new QRadioButton("Line Graph");
     sankeyGraphRadioButton = new QRadioButton("Sankey Diagram");
     lineGraphRadioButton->setChecked(true);
+    connect(lineGraphRadioButton,SIGNAL(clicked(bool)),this,SLOT(toggleLabels()));
 
     QVBoxLayout * layout = new QVBoxLayout;
     layout->addWidget(lineGraphRadioButton);
@@ -105,7 +106,7 @@ void MainWindow::initializeLineGraphPlot()
 {
 
     QFont font("Helvetica[Adobe]",15);
-    lineGraphTitle = new QCPPlotTitle(lineCustomGraph,"Line Graph");
+    lineGraphTitle = new QCPPlotTitle(lineCustomGraph," ");
     lineGraphTitle->setFont(font);
     lineGraphTitle->setTextColor(QColor(255,51,51));
 
@@ -259,12 +260,37 @@ void MainWindow::updateLineDimension(QStringList *dims)
     lineGraphDimensionComboBox->currentIndexChanged(lineDimIndex);
 }
 
+void MainWindow::toggleLabels()
+{
+    for(int i=0; i <lineLabelList.length();++i)
+    {
+        if(lineLabelToggleList.at(i)==true)
+        {
+            lineLabelList.at(i)->setVisible(false);
+            lineLabelToggleList[i]=false;
+        }
+    }
+    lineCustomGraph->replot();
+}
+
 void MainWindow::populateLineGraphStateRange(int states)
 {
     lineCustomGraph->xAxis->setRange(-1, states+1);
     numStates = states;
     lineGraphTurnSlider->setRange(0,states);
     connect(turnSlider,SIGNAL(valueChanged(int)),lineGraphTurnSlider,SLOT(setValue(int)));
+}
+
+void MainWindow::clearAllLabels()
+{
+
+    for(int i=0; i <lineLabelList.length();++i)
+        lineLabelList.at(i)->setVisible(false);
+
+    lineLabelList.clear();
+    lineLabelToggleList.clear();
+
+    lineCustomGraph->replot();
 }
 
 void MainWindow::lineGraphSelectAllActorsCheckBoxClicked(bool click)
@@ -288,6 +314,7 @@ void MainWindow::lineGraphSelectAllActorsCheckBoxClicked(bool click)
 
 void MainWindow::lineGraphDimensionChanged(int value)
 {
+    clearAllLabels();
     dimension=value;
     barGraphDimensionComboBox->setCurrentIndex(value);
 
@@ -372,34 +399,22 @@ void MainWindow::mouseWheel()
 
 void MainWindow::addGraphOnModule1(const QVector<double> &x, const QVector<double> &y,QString Actor)
 {
+    if(lineLabelList.length() <= actorsName.length())
+    {
+        textLabel = new QCPItemText(lineCustomGraph);
+        textLabel->setText(Actor);
+        textLabel->setColor(colorsList.at(actorsName.indexOf(Actor)));
+
+          textLabel->position->setCoords(x.at(0)-1.0,y.at(0)+0.2);
+
+//        textLabel->position->setCoords(x.at(0)-0.5,y.at(0)+0.2);
+        textLabel->setVisible(false);
+        lineCustomGraph->addItem(textLabel);
+        lineLabelList.append(textLabel);
+        lineLabelToggleList.append(false);
+    }
     if(lineGraphCheckedActorsIdList.at(actorsName.indexOf(Actor))==true)
     {
-        if(lineGraphTurnSlider->value()==numStates)
-        {
-            QCPItemText *textLabel = new QCPItemText(lineCustomGraph);
-            textLabel->setText(Actor);
-            textLabel->setColor(colorsList.at(actorsName.indexOf(Actor)));
-            textLabel->position->setCoords(x.at(numStates)+0.3,y.at(numStates)+0.2);
-
-            lineCustomGraph->addItem(textLabel);
-            lineLabel0List.append(textLabel);
-        }
-        else if(lineGraphTurnSlider->value()==0)
-        {
-            QCPItemText *textLabel = new QCPItemText(lineCustomGraph);
-            textLabel->setText(Actor);
-            textLabel->setColor(colorsList.at(actorsName.indexOf(Actor)));
-            textLabel->position->setCoords(x.at(0)-0.5,y.at(0)+0.2);
-
-            lineCustomGraph->addItem(textLabel);
-            lineLabelNList.append(textLabel);
-        }
-        //        else if(lineLabelNList.length() != 0 )
-        //        {
-        //            for(int i=0; i< lineLabelNList.length();++i)
-        //                lineCustomGraph->removeItem(lineLabelNList.at(i));
-        //        }
-
         lineCustomGraph->addGraph();
         lineCustomGraph->graph()->setName(Actor);
         lineCustomGraph->graph()->setData(x, y);
@@ -470,7 +485,20 @@ void MainWindow::moveLegend()
 
 void MainWindow::graphClicked(QCPAbstractPlottable *plottable)
 {
-    //statusBar->showMessage(QString("Clicked on graph '%1'.").arg(plottable->name()), 1000);
+    statusBar()->showMessage(QString("Clicked on Line '%1'.").arg(plottable->name()), 1000);
+
+    if(lineLabelToggleList.at(actorsName.indexOf(plottable->name()))==true)
+    {
+        lineLabelList.at(actorsName.indexOf(plottable->name()))->setVisible(false);
+        lineLabelToggleList[actorsName.indexOf(plottable->name())]=false;
+    }
+    else
+    {
+        lineLabelList.at(actorsName.indexOf(plottable->name()))->setVisible(true);
+        lineLabelToggleList[actorsName.indexOf(plottable->name())]=true;
+    }
+
+    lineCustomGraph->replot();
 }
 
 
