@@ -273,6 +273,13 @@ void MainWindow::toggleLabels()
     lineCustomGraph->replot();
 }
 
+void MainWindow::splineValues(const QVector<double> &x, const QVector<double> &y)
+{
+
+    lineCustomGraph->graph()->setData(x, y);
+    // lineCustomGraph->graph()->setLineStyle(((QCPGraph::LineStyle)(1)));//upto 5
+}
+
 void MainWindow::populateLineGraphStateRange(int states)
 {
     lineCustomGraph->xAxis->setRange(-1, states+1);
@@ -335,7 +342,6 @@ void MainWindow::lineGraphTurnSliderChanged(int value)
                                     QString::number(value)));
     lineCustomGraph->yAxis->setLabel(lineGraphDimensionComboBox->currentText());
 
-
     lineCustomGraph->clearGraphs();
     emit getScenarioRunValues(lineGraphTurnSlider->value(),scenarioBox,dimension);
     lineCustomGraph->replot();
@@ -397,17 +403,73 @@ void MainWindow::mouseWheel()
         lineCustomGraph->axisRect()->setRangeZoom(Qt::Horizontal|Qt::Vertical);
 }
 
-void MainWindow::addGraphOnModule1(const QVector<double> &x, const QVector<double> &y,QString Actor)
+void MainWindow::createSpline(const QVector<double> &x, const QVector<double> &y,QString Actor, int turn)
+{
+    if(turn==0)
+    {
+        //TODO- change plotting techique
+        lineCustomGraph->addGraph();
+        lineCustomGraph->graph()->setScatterStyle(QCPScatterStyle((QCPScatterStyle::ScatterShape)(3)));
+        lineCustomGraph->graph()->setData(x,y);
+    }
+    else if (turn==1)
+    {
+        //TODO- change plotting techique
+        lineCustomGraph->addGraph();
+        lineCustomGraph->graph()->setData(x,y);
+        lineCustomGraph->graph()->setScatterStyle(QCPScatterStyle((QCPScatterStyle::ScatterShape)(0)));
+    }
+    else if(turn>1)
+    {
+        QVector<double> X(turn+1), Y(turn+1), newY, newX;
+
+        for(int i = 0 ; i <= turn; ++i)
+        {
+            X[i]=x[i];
+            Y[i]=y[i];
+        }
+
+        tk::spline s;
+        s.set_points(X.toStdVector(),Y.toStdVector());
+
+        for(int i=0; i<=turn*10; i++)
+        {
+            double x=0.1*i;
+            newX.append(x);
+            newY.append(s(x));
+        }
+        lineCustomGraph->addGraph();
+        lineCustomGraph->graph()->setData(newX,newY);
+        lineCustomGraph->graph()->setScatterStyle(QCPScatterStyle((QCPScatterStyle::ScatterShape)(0)));
+
+    }
+
+    lineCustomGraph->graph()->setName(Actor);
+
+    QString actorDetails;
+    actorDetails.append("Name: " +Actor + "\n");
+    actorDetails.append("Description: " +actorsDescription.at(actorsName.indexOf(Actor)) + "\n");
+    actorDetails.append("Influence: " +actorsInfl.at(actorsName.indexOf(Actor)));
+
+    lineCustomGraph->graph()->setTooltip(actorDetails);
+
+
+    QPen graphPen;
+    graphPen.setColor(colorsList.at(actorsName.indexOf(Actor)));
+    graphPen.setWidthF(2.0);
+
+    lineCustomGraph->graph()->setPen(graphPen);
+
+}
+
+void MainWindow::addGraphOnModule1(const QVector<double> &x, const QVector<double> &y,QString Actor,int turn)
 {
     if(lineLabelList.length() <= actorsName.length())
     {
         textLabel = new QCPItemText(lineCustomGraph);
         textLabel->setText(Actor);
         textLabel->setColor(colorsList.at(actorsName.indexOf(Actor)));
-
-          textLabel->position->setCoords(x.at(0)-1.0,y.at(0)+0.2);
-
-//        textLabel->position->setCoords(x.at(0)-0.5,y.at(0)+0.2);
+        textLabel->position->setCoords(x.at(0)-1.0,y.at(0)+0.2);
         textLabel->setVisible(false);
         lineCustomGraph->addItem(textLabel);
         lineLabelList.append(textLabel);
@@ -415,26 +477,9 @@ void MainWindow::addGraphOnModule1(const QVector<double> &x, const QVector<doubl
     }
     if(lineGraphCheckedActorsIdList.at(actorsName.indexOf(Actor))==true)
     {
-        lineCustomGraph->addGraph();
-        lineCustomGraph->graph()->setName(Actor);
-        lineCustomGraph->graph()->setData(x, y);
-        lineCustomGraph->graph()->setLineStyle(((QCPGraph::LineStyle)(1)));//upto 5
+        createSpline(x,y,Actor,turn);
 
-        QString actorDetails;
-        actorDetails.append("Name: " +Actor + "\n");
-        actorDetails.append("Description: " +actorsDescription.at(actorsName.indexOf(Actor)) + "\n");
-        actorDetails.append("Influence: " +actorsInfl.at(actorsName.indexOf(Actor)));
 
-        lineCustomGraph->graph()->setTooltip(actorDetails);
-
-        //  if (rand()%100 > 50)
-        lineCustomGraph->graph()->setScatterStyle(QCPScatterStyle((QCPScatterStyle::ScatterShape)(0)));
-
-        QPen graphPen;
-        graphPen.setColor(colorsList.at(actorsName.indexOf(Actor)));
-        graphPen.setWidthF(2.0);
-
-        lineCustomGraph->graph()->setPen(graphPen);
 
     }
 }

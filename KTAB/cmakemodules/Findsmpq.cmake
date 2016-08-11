@@ -226,7 +226,8 @@ if(SMPQ_SOURCE_DIR)
     set (QtProjectLib_hdr
         ${SMPQ_SOURCE_DIR}/mainwindow.h
         ${SMPQ_SOURCE_DIR}/csv.h
-        ${SMPQ_SOURCE_DIR}/database.h)
+        ${SMPQ_SOURCE_DIR}/database.h
+        ${SMPQ_SOURCE_DIR}/spline.h)
 
     set (QtProjectLib_ui  ${SMPQ_SOURCE_DIR}/mainwindow.ui)
     set (QtProjectRsc_qrc ${SMPQ_SOURCE_DIR}/dockwidgets.qrc)
