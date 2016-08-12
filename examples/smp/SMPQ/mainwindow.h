@@ -27,7 +27,7 @@
 #include <QMainWindow>
 #include "csv.h"
 #include "database.h"
-#include "spline.h"
+#include "../qcustomplot/spline.h"
 #include "../qcustomplot/qcustomplot.h"
 
 #include <QtSql>

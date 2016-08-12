@@ -821,15 +821,21 @@ void MainWindow::createActions()
   fileMenu->addAction(readCsvAct);
   fileToolBar->addAction(readCsvAct);
 
+  QList <QKeySequence> seq;
+  seq.append(Qt::Key_I | Qt::CTRL);
   const QIcon dbIcon = QIcon::fromTheme("Import Database ", QIcon(":/images/csv.png"));
   QAction *importDBAct = new QAction(dbIcon, tr("&Import Database"), this);
+  importDBAct->setShortcuts(seq);
   importDBAct->setStatusTip(tr("Import Database"));
   connect(importDBAct, SIGNAL(triggered(bool)), this,SLOT(dbGetFilePAth(bool)));
   fileMenu->addAction(importDBAct);
   fileToolBar->addAction(importDBAct);
 
+  seq.clear();
+  seq.append(Qt::Key_E | Qt::CTRL);
   const QIcon modDBIcon = QIcon::fromTheme("Edit Database", QIcon(":/images/csv.png"));
   QAction *modifyDBAct = new QAction(modDBIcon, tr("&Edit DB, Save as CSV"), this);
+  modifyDBAct->setShortcuts(seq);
   modifyDBAct->setStatusTip(tr("&Edit DB, Save as CSV"));
   connect(modifyDBAct, SIGNAL(triggered(bool)), this,SLOT(dbEditGetFilePAth(bool)));
   fileMenu->addAction(modifyDBAct);
