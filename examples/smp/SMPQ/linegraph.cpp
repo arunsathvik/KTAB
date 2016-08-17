@@ -99,7 +99,6 @@ void MainWindow::initializeLineGraphDock()
   //positioning widgets in the grid
   lineGraphGridLayout->addWidget(lineGraphTurnSlider,0,0,1,1,Qt::AlignTop);
   lineGraphGridLayout->addWidget(lineGraphControlsFrame,1,1,Qt::AlignRight);
-
 }
 
 void MainWindow::initializeLineGraphPlot()
@@ -414,7 +413,6 @@ void MainWindow::createSpline(const QVector<double> &x, const QVector<double> &y
 {
   if(turn==0)
     {
-      //TODO- change plotting techique
       QVector<double> X(x), Y(y);
       X.prepend(-0.1);
       Y.prepend(y.at(0));
@@ -423,7 +421,6 @@ void MainWindow::createSpline(const QVector<double> &x, const QVector<double> &y
 
       lineCustomGraph->addGraph();
       lineCustomGraph->graph()->setData(X,Y);
-      //      lineCustomGraph->graph()->setScatterStyle(myScatter);
     }
   else if (turn==1)
     {
@@ -433,7 +430,6 @@ void MainWindow::createSpline(const QVector<double> &x, const QVector<double> &y
       X.resize(3);
       Y.resize(3);
 
-      //TODO- change plotting techique
       lineCustomGraph->addGraph();
       lineCustomGraph->graph()->setData(X,Y);
       lineCustomGraph->graph()->setScatterStyle(QCPScatterStyle((QCPScatterStyle::ScatterShape)(0)));
@@ -460,6 +456,60 @@ void MainWindow::createSpline(const QVector<double> &x, const QVector<double> &y
       lineCustomGraph->addGraph();
       newX.prepend(-0.1);
       newY.prepend(y.at(0));
+
+      qDebug()<<newY.length();
+
+      for(int i=0;i<newY.length();++i)
+        {
+          if(newY.at(i)<0)
+            newY[i]=0.0;
+          if(newX.at(i)>100)
+            newX[i]=100.0;
+        }
+
+      //      if(newY.length()==22)
+      //        {
+      //          newY[20]= newY[21];
+      //          newY[10]= newY[9];
+      //        }
+      //      if(newY.length()==32)
+      //        {
+      //          newY[30]= newY[31];
+      //          newY[20]= newY[19];
+      //        }
+
+      //      if(newY.length()==42)
+      //        {
+      //          newY[40]= newY[41];
+      //          newY[30]= newY[29];
+      //        }
+
+      //      if(newY.length()==52)
+      //        {
+      //          newY[50]= newY[51];
+      //          newY[40]= newY[39];
+      //        }
+
+      //      if(newY.length()==62)
+      //        {
+      //          newY[60]= newY[61];
+      //          newY[50]= newY[49];
+      //        }
+
+      //      if(newY.length()==72)
+      //        {
+      //          newY[70]= newY[71];
+      //          newY[60]= newY[59];
+      //        }
+
+      //      if(newY.length()==82)
+      //        {
+      //          newY[80]= newY[81];
+      //          newY[70]= newY[69];
+      //        }
+
+      //TODO : Make code generic, Refine the bar Placements
+
 
       lineCustomGraph->graph()->setData(newX,newY);
       lineCustomGraph->graph()->setScatterStyle(QCPScatterStyle((QCPScatterStyle::ScatterShape)(0)));
@@ -512,19 +562,19 @@ void MainWindow::contextMenuRequest(QPoint pos)
 
   if (lineCustomGraph->legend->selectTest(pos, false) >= 0) // context menu on legend requested
     {
-      menu->addAction("Move to top left", this, SLOT(moveLegend()))->setData((int)(Qt::AlignTop|Qt::AlignLeft));
-      menu->addAction("Move to top center", this, SLOT(moveLegend()))->setData((int)(Qt::AlignTop|Qt::AlignHCenter));
-      menu->addAction("Move to top right", this, SLOT(moveLegend()))->setData((int)(Qt::AlignTop|Qt::AlignRight));
-      menu->addAction("Move to bottom right", this, SLOT(moveLegend()))->setData((int)(Qt::AlignBottom|Qt::AlignRight));
-      menu->addAction("Move to bottom left", this, SLOT(moveLegend()))->setData((int)(Qt::AlignBottom|Qt::AlignLeft));
+      //      menu->addAction("Move to top left", this, SLOT(moveLegend()))->setData((int)(Qt::AlignTop|Qt::AlignLeft));
+      //      menu->addAction("Move to top center", this, SLOT(moveLegend()))->setData((int)(Qt::AlignTop|Qt::AlignHCenter));
+      //      menu->addAction("Move to top right", this, SLOT(moveLegend()))->setData((int)(Qt::AlignTop|Qt::AlignRight));
+      //      menu->addAction("Move to bottom right", this, SLOT(moveLegend()))->setData((int)(Qt::AlignBottom|Qt::AlignRight));
+      //      menu->addAction("Move to bottom left", this, SLOT(moveLegend()))->setData((int)(Qt::AlignBottom|Qt::AlignLeft));
     }
   else  // general context menu on graphs requested
     {
-      menu->addAction("Add random graph", this, SLOT(addGraphOnModule1()));
-      if (lineCustomGraph->selectedGraphs().size() > 0)
-        menu->addAction("Remove selected graph", this, SLOT(removeSelectedGraph()));
-      if (lineCustomGraph->graphCount() > 0)
-        menu->addAction("Remove all graphs", this, SLOT(removeAllGraphs()));
+      //      menu->addAction("Add random graph", this, SLOT(addGraphOnModule1()));
+      //      if (lineCustomGraph->selectedGraphs().size() > 0)
+      //        menu->addAction("Remove selected graph", this, SLOT(removeSelectedGraph()));
+      //      if (lineCustomGraph->graphCount() > 0)
+      //        menu->addAction("Remove all graphs", this, SLOT(removeAllGraphs()));
     }
 
   menu->popup(lineCustomGraph->mapToGlobal(pos));

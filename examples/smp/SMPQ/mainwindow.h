@@ -333,6 +333,7 @@ private :
   QList <bool> lineLabelToggleList;
   QList <QCPItemText * > lineLabelList;
   QCPItemText *textLabel ;
+  int tnty;
 
 private slots :
   void lineGraphSelectAllActorsCheckBoxClicked(bool click);
