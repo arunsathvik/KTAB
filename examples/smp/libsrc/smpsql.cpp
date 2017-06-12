@@ -611,15 +611,19 @@ void SMPState::updateBargnTable(const vector<vector<BargainSMP*>> & brgns,
 
     query.bindValue(":init_prob", initProb);
 
-    //Init_Seld
     query.bindValue(":init_seld", isInitSelected);
 
     // For SQ cases, there would be no receiver
     if (initActor != recvActor) {
       query.bindValue(":recd_prob", recvProb);
 
-      //Recd_Seld
       query.bindValue(":recd_seld", isRecvSelected);
+    }
+    else {
+      // Pass NULL values for SQ cases
+      query.bindValue(":recd_prob", QVariant::Double);
+
+      query.bindValue(":recd_seld", QVariant::Int);
     }
 
     query.bindValue(":turn_t", t);
@@ -680,10 +684,6 @@ void SMPState::updateBargnTable(const vector<vector<BargainSMP*>> & brgns,
         initProb = (actorBargains[initActr])(initBgnNdx, 0);
         initSelected = initBgnNdx == actorMaxBrgNdx[initActr] ? 1 : 0;
 
-        /*cout << __LINE__ << " " << "SQ" << " " << bg->getID() \
-          << " " << initActr << ":" << rcvrActr << " " \
-          << initProb << " " << initSelected << endl;*/
-
         bindExecuteBargnTableUpdate(updateStmt, t, bg->getID(),
                                     initActr, initProb, initSelected,
                                     rcvrActr, -1.0, 0);
@@ -701,7 +701,6 @@ void SMPState::updateBargnTable(const vector<vector<BargainSMP*>> & brgns,
           initProb = (actorBargains[initActr])(initBgnNdx, 0);
           initSelected = initBgnNdx == actorMaxBrgNdx[initActr] ? 1 : 0;
           rcvrActr = model->actrNdx(bg->actRcvr);
-          //bgID = bg->getID();
 
           // Get the bargains of receiver actor
           auto brgnRcvr = brgns[rcvrActr];
@@ -715,15 +714,6 @@ void SMPState::updateBargnTable(const vector<vector<BargainSMP*>> & brgns,
 
               // Check if it is the selected bargain for receiver actor
               rcvrSelected = actorMaxBrgNdx[rcvrActr] == rcvrBgNdx ? 1 : 0;
-
-              /*std::cout.precision(4);
-                cout << std::fixed;
-                cout << "Line " << __LINE__ << " " << bgID << " " \
-                << initActr << ":" << rcvrActr \
-                << " init_prob: " << initProb \
-                << " init_selected: " << initSelected \
-                << " rcvr_prob: " << rcvrProb \
-                << " rcvr_selected: " << rcvrSelected << endl << endl;*/
 
               --countDown;
               bindExecuteBargnTableUpdate(updateStmt, t, bg->getID(),
