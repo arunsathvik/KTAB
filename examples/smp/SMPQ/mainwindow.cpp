@@ -244,7 +244,6 @@ void MainWindow::dbGetFilePAth(bool bl, QString smpDBPath, bool run)
                 else if(!dbPath.isEmpty())
                 {
                     setCurrentFile(dbPath.append(".db"));
-                    dbPath.remove(".db");
                 }
             }
         }
