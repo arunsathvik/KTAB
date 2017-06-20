@@ -279,6 +279,7 @@ void MainWindow::dbGetFilePAth(bool bl, QString smpDBPath, bool run)
 
             modeltoDB->clear();
             emit dbFilePath(dbPath,conType,connectionString,run);
+            turnSlider->setEnabled(true);
 
 
             reconnectPlotWidgetSignals();
@@ -675,6 +676,9 @@ void MainWindow::setCSVItemModel(QStandardItemModel *model, QStringList scenario
     barGraphDock->setVisible(false);
     quadMapDock->setVisible(false);
 
+    tableControlsFrame->show();
+    stackWidget->show();
+
     // to pass csvfile path to smp
     clearAllGraphs();
     seedRand->clear();
@@ -1018,6 +1022,7 @@ void MainWindow::setDBItemModel(QStandardItemModel *model)
     //    disconnect(csvTableView, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(displayMenuTableView(QPoint)));
 
     tableControlsFrame->show();
+    stackWidget->show();
 
     scenarioComboBox->setEditable(false);
     scenarioNameLineEdit->setVisible(false);
@@ -1125,6 +1130,9 @@ void MainWindow::createNewSMPData(bool bl)
     lineGraphDock->setVisible(false);
     barGraphDock->setVisible(false);
     quadMapDock->setVisible(false);
+
+    tableControlsFrame->show();
+    stackWidget->show();
 
     removeAllScatterPoints();
     seedRand->clear();
@@ -2529,6 +2537,7 @@ void MainWindow::actorsNameDesc(QVector <QString> actorName,QVector <QString> ac
 
     numAct= actorsName.length();
     actorsQueriedCount=numAct-1;
+
     if(!lineGraphActorsCheckBoxList.isEmpty())
     {
         for(int i=0; i < actorsName.length();++i)
@@ -2541,7 +2550,9 @@ void MainWindow::actorsNameDesc(QVector <QString> actorName,QVector <QString> ac
         }
     }
     else
+    {
         populateLineGraphActorsList();
+    }
 
     if(!barGraphActorsCheckBoxList.isEmpty())
     {
@@ -2555,7 +2566,9 @@ void MainWindow::actorsNameDesc(QVector <QString> actorName,QVector <QString> ac
         }
     }
     else
+    {
         populateBarGraphActorsList();
+    }
 
 
     if(!quadMapInitiatorsRadioButtonList.isEmpty())
@@ -2579,7 +2592,9 @@ void MainWindow::actorsNameDesc(QVector <QString> actorName,QVector <QString> ac
         }
     }
     else
+    {
         populateInitiatorsAndReceiversRadioButtonsAndCheckBoxes();
+    }
 }
 
 void MainWindow::actorsInfluence(QVector<QString> actorInfluence)
@@ -2655,7 +2670,11 @@ void MainWindow :: reconnectPlotWidgetSignals()
     connect(lineGraphSelectAllCheckBox,SIGNAL(clicked(bool)),this,SLOT(lineGraphSelectAllActorsCheckBoxClicked(bool)));
     connect(barGraphSelectAllCheckBox,SIGNAL(clicked(bool)),this,SLOT(barGraphSelectAllActorsCheckBoxClicked(bool)));
     connect(barGraphBinWidthButton,SIGNAL(clicked(bool)),this, SLOT(barGraphBinWidthButtonClicked(bool)));
-
+    for(int index=0; index < lineActorCBList.length();++ index)
+    {
+        connect(lineActorCBList.at(index),SIGNAL(toggled(bool)),this,SLOT(lineGraphActorsCheckboxClicked(bool)));
+        connect(barActorCBList.at(index),SIGNAL(toggled(bool)),this,SLOT(barGraphActorsCheckboxClicked(bool)));
+    }
 }
 
 void MainWindow::openRecentFile()
@@ -2755,10 +2774,24 @@ void MainWindow::removeFromRecentFileHistory(QString fileName)
     }
 }
 
+void MainWindow::resetGUI()
+{
+    clearAllGraphs();
+    tableControlsFrame->hide();
+    stackWidget->hide();
+    turnSlider->hide();
+    lineGraphDock->hide();
+    barGraphDock->hide();
+    quadMapDock->hide();
+
+}
+
 void MainWindow::connectionStrPath(QString str)
 {
     connectionString = str;
 
+    turnSlider->setEnabled(false);
+    resetGUI();
     if(menuconfig == false)
     {
         runPushButtonClicked(true);
