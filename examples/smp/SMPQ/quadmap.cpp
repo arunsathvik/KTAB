@@ -439,18 +439,21 @@ void MainWindow::getUtilChlgHorizontalVerticalAxisData(int turn)
                 catch (KException &ke)
                 {
                     exceptionMsg = QString::fromStdString(ke.msg);
-                    displayMessage("Exception",exceptionMsg);
+                    displayMessage("Exception","The SMP Model has encountered an error and terminated: \n"+
+                                   exceptionMsg);
                     LOG(INFO) << exceptionMsg.toStdString();
                 }
                 catch (std::exception &std_ex)
                 {
                     exceptionMsg = std_ex.what();
-                    displayMessage("Exception",exceptionMsg);
+                    displayMessage("Exception","The SMP Model has encountered an error and terminated: \n"+
+                                   exceptionMsg);
                     LOG(INFO) << exceptionMsg.toStdString();
                 }
                 catch (...)
                 {
-                    exceptionMsg = "SMPLib::SMPModel::getQuadMapPoint: Unknown Exception Caught while getting QuadMap values";
+                    exceptionMsg ="The SMP Model has encountered an error and terminated: \n"
+                                  "SMPLib::SMPModel::getQuadMapPoint: Unknown Exception Caught while getting QuadMap values";
                     displayMessage("Exception",exceptionMsg);
                     LOG(INFO) << exceptionMsg.toStdString();
                 }
@@ -468,18 +471,21 @@ void MainWindow::getUtilChlgHorizontalVerticalAxisData(int turn)
                 catch (KException &ke)
                 {
                     exceptionMsg = QString::fromStdString(ke.msg);
-                    displayMessage("Exception",exceptionMsg);
+                    displayMessage("Exception","The SMP Model has encountered an error and terminated: \n"+
+                                   exceptionMsg);
                     LOG(INFO) << exceptionMsg.toStdString();
                 }
                 catch (std::exception &std_ex)
                 {
                     exceptionMsg = std_ex.what();
-                    displayMessage("Exception",exceptionMsg);
+                    displayMessage("Exception","The SMP Model has encountered an error and terminated: \n"+
+                                   exceptionMsg);
                     LOG(INFO) << exceptionMsg.toStdString();
                 }
                 catch (...)
                 {
-                    exceptionMsg = "SMPLib::SMPModel::getQuadMapPoint: Unknown Exception Caught while getting QuadMap values";
+                    exceptionMsg = "The SMP Model has encountered an error and terminated: \n"
+                                   "SMPLib::SMPModel::getQuadMapPoint: Unknown Exception Caught while getting QuadMap values";
                     displayMessage("Exception",exceptionMsg);
                     LOG(INFO) << exceptionMsg.toStdString();
                 }

@@ -361,18 +361,20 @@ void MainWindow::runModel(QString conStr, QString fileName)
 
         if(false==isDbConnected)
         {
-         QApplication::restoreOverrideCursor();
-         displayMessage("Exception",QString::fromStdString(KBase::Model::getLastError()));
+            QApplication::restoreOverrideCursor();
+            displayMessage("Exception","The SMP Model has encountered an error and terminated: \n"
+                           +QString::fromStdString(KBase::Model::getLastError()));
         }
         else
         {
-             currentScenarioId = QString::fromStdString(SMPLib::SMPModel::runModel
+            currentScenarioId = QString::fromStdString(SMPLib::SMPModel::runModel
                                                        (sqlFlags,
                                                         inputDataFile.toStdString(),seed,false,parameters));
             if(true==currentScenarioId.isEmpty())
             {
                 QApplication::restoreOverrideCursor();
-                displayMessage("Exception",QString::fromStdString(KBase::Model::getLastError()));
+                displayMessage("Exception","The SMP Model has encountered an error and terminated: \n"+
+                               QString::fromStdString(KBase::Model::getLastError()));
                 scenarioIdAvailable=false;
             }
             else
@@ -395,7 +397,6 @@ void MainWindow::runModel(QString conStr, QString fileName)
             QApplication::restoreOverrideCursor();
 
             statusBar()->showMessage("SMP Model Run Cancelled because of an Exception !! ");
-            QMessageBox::warning(this,"Exception", "SMP Model Run Cancelled because of an Exception!! ",QMessageBox::Ok);
             runButton->setEnabled(true);
             runButton->setStyleSheet("border-style: outset; border-width: 2px;border-color: green;");
         }
@@ -403,7 +404,6 @@ void MainWindow::runModel(QString conStr, QString fileName)
     else
     {
         statusBar()->showMessage("SMP Model Run Cancelled !! ");
-        QMessageBox::warning(this,"Warning", "SMP Model Run Cancelled !! ",QMessageBox::Ok);
         runButton->setEnabled(true);
         runButton->setStyleSheet("border-style: outset; border-width: 2px;border-color: green;");
 
@@ -840,7 +840,8 @@ void MainWindow::saveTurnHistoryToCSV()
 
             if(false==isDbConnected)
             {
-                displayMessage("Exception",QString::fromStdString(KBase::Model::getLastError()));
+                displayMessage("Exception","The SMP Model has encountered an error and terminated: \n"+
+                               QString::fromStdString(KBase::Model::getLastError()));
             }
             else
             {
@@ -853,26 +854,23 @@ void MainWindow::saveTurnHistoryToCSV()
                 catch (KException &ke)
                 {
                     exceptionMsg = QString::fromStdString(ke.msg);
-                    displayMessage("Exception",exceptionMsg);
+                    displayMessage("Exception","The SMP Model has encountered an error and terminated: \n"+exceptionMsg);
                     LOG(INFO) << exceptionMsg.toStdString();
                 }
                 catch (std::exception &std_ex)
                 {
                     exceptionMsg = std_ex.what();
-                    displayMessage("Exception",exceptionMsg);
+                    displayMessage("Exception","The SMP Model has encountered an error and terminated: \n"+exceptionMsg);
                     LOG(INFO) << exceptionMsg.toStdString();
                 }
                 catch (...)
                 {
-                    exceptionMsg = "SMPLib::SMPModel::getQuadMapPoint: Unknown Exception Caught while getting QuadMap values";
+                    exceptionMsg = "The SMP Model has encountered an error and terminated: \n"
+                                   "SMPLib::SMPModel::getQuadMapPoint: Unknown Exception Caught while getting QuadMap values";
                     displayMessage("Exception",exceptionMsg);
                     LOG(INFO) << exceptionMsg.toStdString();
                 }
             }
-
-
-            //                SMPLib::md0->sankeyOutput(csvFileNameLocation.toStdString()
-            //                                          ,dbPath.toStdString(),scenarioBox.toStdString());
             statusBar()->showMessage("Turn History is stored in : " +
                                      csvFileNameLocation+ "_effPow.csv and " + " " +
                                      csvFileNameLocation+ "_posLog.csv files",2000);
@@ -889,23 +887,23 @@ void MainWindow::saveTurnHistoryToCSV()
         catch (KException &ke)
         {
             exceptionMsg = QString::fromStdString(ke.msg);
-            displayMessage("Exception",exceptionMsg);
+            displayMessage("Exception","The SMP Model has encountered an error and terminated: \n"+exceptionMsg);
             LOG(INFO) << exceptionMsg.toStdString();
         }
         catch (std::exception &std_ex)
         {
             exceptionMsg = std_ex.what();
-            displayMessage("Exception",exceptionMsg);
+            displayMessage("Exception","The SMP Model has encountered an error and terminated: \n"+exceptionMsg);
             LOG(INFO) << exceptionMsg.toStdString();
         }
         catch (...)
         {
-            exceptionMsg = "SMPLib::SMPModel::getQuadMapPoint: Unknown Exception Caught while getting QuadMap values";
+            exceptionMsg = "The SMP Model has encountered an error and terminated: \n"
+                           "SMPLib::SMPModel::getQuadMapPoint: Unknown Exception Caught while getting QuadMap values";
             displayMessage("Exception",exceptionMsg);
             LOG(INFO) << exceptionMsg.toStdString();
         }
     }
-    //    SMPLib::md0->sankeyOutput(csvFileNameLocation.toStdString());
     statusBar()->showMessage("Turn History is stored in : " +
                              csvFileNameLocation+ "_effPow.csv and " + " " +
                              csvFileNameLocation+ "_posLog.csv files",2000);
